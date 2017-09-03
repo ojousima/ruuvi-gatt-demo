@@ -1,0 +1,9 @@
+[submodule "web-bluetooth"]
+	path = web-bluetooth
+	url = https://github.com/ojousima/web-bluetooth.git
+[submodule "ruuvi-nodejs"]
+	path = ruuvi-nodejs
+	url = https://github.com/ojousima/ruuvi-nodejs.git
+[submodule "ruuvi.endpoints.js"]
+	path = ruuvi.endpoints.js
+	url = https://github.com/ruuvi/ruuvi.endpoints.js.git
