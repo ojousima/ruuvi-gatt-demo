@@ -10316,8 +10316,6 @@ let connect = async function(deviceNamePrefix){
       for(const iface of serviceList) {
         optionalServices.push(iface.getServiceUUID());
       }
-      //XXX test invalid
-      optionalServices.push("0x1234");
       options.filters = filters;
       options.optionalServices = optionalServices;
       //options.acceptAllDevices = true;
@@ -10430,7 +10428,17 @@ class serviceInterface{
 
   /** Return list of characteristic UUIDs **/
   getCharacteristicUUIDs(){
-  	return this.characteristicUUIDs;
+    let list = [];
+    for (key in this.characteristicUUIDs) {
+      // Do not include prototype properties
+      //if (Object.prototype.hasOwnProperty.call(foo, key)) {
+      //  doSomething(key);
+      //}
+      if ({}.hasOwnProperty.call(this.characteristicUUIDs, key)) {
+        list.push(this.characteristicUUIDs[key]);
+      }
+    }
+  	return ;
   }
 
   /** Return list of characteristic names **/
