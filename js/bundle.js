@@ -10395,6 +10395,10 @@ class nordicUART extends serviceInterface {
 
 module.exports = nordicUART;
 },{"./service_interface.js":5}],5:[function(require,module,exports){
+/*jshint 
+    node: true
+ */
+"use strict";
 class serviceInterface{
 
   /** Return UUID of service **/
@@ -10491,4 +10495,5 @@ class serviceInterface{
   	console.log("Error, disconnect must be defined in serive subclass");
   }
 }
+module.exports = serviceInterface;
 },{}]},{},[1]);
