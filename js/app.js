@@ -1,10 +1,12 @@
-"use strict"
+/*jshint 
+    node: true
+ */
+"use strict";
 let webble    = require("ruuvi.webbluetooth.js");
-let endpoints = require("ruuvi.endpoints.js");
 
-let device = {};
-
-var connect = function(device)
-{
-	device = webble.connect(device);
-}
+async function connect(deviceName){
+    
+	let device = {};
+	device = await webble.connect(deviceName);
+	return device;
+};
