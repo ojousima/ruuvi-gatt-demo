@@ -10312,7 +10312,7 @@ let connect = async function(deviceNamePrefix){
       let options = {};
       options.filters = filters;
       let device = await navigator.bluetooth.requestDevice(options);
-      handle = await this.device.gatt.connect();
+      handle = await device.gatt.connect();
       console.log('Getting Services...');
       services = await server.getPrimaryServices();
       await initServices(handle, services);
