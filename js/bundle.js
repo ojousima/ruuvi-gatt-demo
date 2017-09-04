@@ -10270,10 +10270,42 @@ return jQuery;
 } );
 
 },{}],3:[function(require,module,exports){
-"use strict"
+/*jshint 
+    node: true
+ */
+"use strict";
+var NORDIC_UART = require("./services/nordic_uart.js");
+
+var handle = {};
+/** Known services **/
+var serviceList = [NORDIC_UART];
+/** Initialized services **/
+var servicesAvailable = {};
+
+let initServices = async function(serverHandle, services){
+  try{
+    console.log('Initializing services');
+      //Search through list of known services
+      for (const service of services) {
+        //If connection includes a known service
+        let uuid = service.uuid;
+        for(const iface of serviceList) {
+          if(uuid == iface.getServiceUUID()){
+            //Initialise service
+            await iface.init(handle);
+            //Add to list of services
+            let name = iface.getName();
+            servicesAvailable[name] = service;
+          }
+        }
+      }
+  } catch(error) {
+    console.log("Error: " + error);
+  }
+};
 
 let connect = async function(deviceNamePrefix){
-  let handle = {};
+
   try {
       let filters = [];
       filters.push({namePrefix: deviceNamePrefix});
@@ -10281,11 +10313,14 @@ let connect = async function(deviceNamePrefix){
       options.filters = filters;
       let device = await navigator.bluetooth.requestDevice(options);
       handle = await this.device.gatt.connect();
+      console.log('Getting Services...');
+      services = await server.getPrimaryServices();
+      await initServices(handle, services);
     } catch (error) {
       console.log("Error: " + error);
     }
   return handle;
-}
+};
 
 let disconnect = async function(serverHandle){
   try {
@@ -10293,16 +10328,11 @@ let disconnect = async function(serverHandle){
   } catch(error) {
     console.log("Error: " + error);
   }
-}
+};
 
-let getServices = async function(serverHandle){
-  let services = {};
-  try{
-    //TODO
-  } catch(error) {
-    console.log("Error: " + error);
-  }
-}
+let getServices = function(){
+  return servicesAvailable;
+};
 
 /**
  *  connect(deviceNamePrefix) Starts asynchronous search for devices which advertise name that starts with prefix.
@@ -10315,5 +10345,150 @@ module.exports = {
   connect           : connect,
   disconnect        : disconnect,
   getServices       : getServices
+};
+},{"./services/nordic_uart.js":4}],4:[function(require,module,exports){
+/*jshint 
+    node: true
+ */
+"use strict";
+var serviceInterface = require("./service_interface.js");
+
+class nordicUART extends serviceInterface {
+
+  constructor(){
+  	super();
+  	this.serviceName = "Nordic UART";
+  	this.serviceUUID = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E".toLowerCase();
+  	this.characteristicUUIDs = { "TX": "6E400002-B5A3-F393-E0A9-E50E24DCCA9E".toLowerCase(),
+  	                             "RX": "6E400003-B5A3-F393-E0A9-E50E24DCCA9E".toLowerCase()};
+  	this.characteristicNames = [ "TX", "RX"];
+  	this.serviceHandle = 0;
+  	this.TX = {
+        handle: 0,
+        UUID: this.characteristicUUIDs.TX,
+        name: "TX",
+        value: 0,
+        callback: 0, // TODO: Can permissions be read from characteristic?
+        permissions: {
+        "read":  0,
+        "write": 1,
+        "notify": 0,
+        "indicate": 0
+       }
+  	};
+  	this.RX = {
+        handle: 0,
+        UUID: this.characteristicUUIDs.RX,
+        name: "RX",
+        value: 0,
+        callback: 0,
+        permissions: {
+        "read":  1,
+        "write": 0,
+        "notify": 1,
+        "indicate": 0
+       }
+  	};
+    this.characteristics = [this.TX, this.RX];
+  }
+}
+
+module.exports = nordicUART;
+},{"./service_interface.js":5}],5:[function(require,module,exports){
+class serviceInterface{
+
+  /** Return UUID of service **/
+  getServiceUUID(){
+  	return this.serviceUUID;
+  }
+
+  /** Return name of service **/
+  getServiceName(){
+  	return this.serviceName;
+  }
+
+  /** Return list of characteristic UUIDs **/
+  getCharacteristicUUIDs(){
+  	return this.characteristicUUIDs;
+  }
+
+  /** Return list of characteristic names **/
+  getCharacteristicNames(){
+  	return this.characteristicNames;
+  }
+
+  getCharacteristicByUUID(uuid){
+    for(characteristic in this.characteristics){
+      if(characteristic.uuid == uuid)
+        return characteristic;
+    }
+    return 0; 
+  }
+
+  /** Attempts to write value to characteristic **/
+  async writeCharacteristic(uuid, value){
+    let characteristic = this.getCharacteristicByUUID(uuid);
+    if(!characteristic || !characteristic.permissions.write){
+      console.log("Error: could not write to " + uuid);
+      return;
+    }
+    await characteristic.handle.writeValue(value);
+  }
+
+
+  /** Will return value of characteristic **/
+  async readCharacteristic(uuid){
+    let characteristic = this.getCharacteristicByUUID(uuid);
+    if(!characteristic || !characteristic.permissions.read){
+      console.log("Error: could not read " + uuid);
+      return;
+    }
+    return await characteristic.readValue();
+  }
+
+  /** Register to notifications from service. Call callback on data. **/
+  async registerNotifications(uuid, callback){
+    let characteristic = this.getCharacteristicByUUID(uuid);
+    if(!characteristic || !characteristic.permissions.notify){
+      console.log("Error: could not register notifications for " + uuid);
+      return;
+    }
+    characteristic.callback = callback;
+    await characteristic.startNotifications();  
+  }
+
+  /**
+   *  Initializes service.
+   */
+  async init(serverHandle){
+    try{
+      this.serviceHandle = await serverHandle.getPrimaryService(this.serviceUUID);
+      let characteristics = this.getCharacteristicUUIDs();
+      for(uuid in characteristics){
+        let characteristic = this.getCharacteristicByUUID(uuid);
+        characteristic.handle = await this.serviceHandle.getCharacteristic(this.TX.UUID);
+        characteristic.onChange = function(event) 
+        {
+          if(this.callback){
+            callback(event.target.value);
+          }
+        }
+        //TODO: Verify scope of "this" after bind
+        characteristic.onChange.bind(characteristic);
+        characteristic.handle.addEventListener('characteristicvaluechanged',
+                                                characteristic.onChange);
+      }  
+    } catch (error) {
+      console.log(this.serviceName + " error: " + error);
+    }
+  }
+
+  /**
+   *  Releases any connection handles as applicable
+   */
+  async deinit(){
+  	//Service-specific
+  	console.log("Error, disconnect must be defined in serive subclass");
+  }
 }
 },{}]},{},[1]);
