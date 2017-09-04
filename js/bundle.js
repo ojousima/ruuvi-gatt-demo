@@ -10493,8 +10493,8 @@ class serviceInterface{
     try{
       this.serviceHandle = await serverHandle.getPrimaryService(this.serviceUUID);
       let characteristics = this.getCharacteristicUUIDs();
-      for(uuid in characteristics){
-        let characteristic = this.getCharacteristicByUUID(uuid);
+      for(let ii = 0; ii < characteristics.length; ii++){
+        let characteristic = this.getCharacteristicByUUID(characteristics[ii]);
         characteristic.handle = await this.serviceHandle.getCharacteristic(this.TX.UUID);
         characteristic.onChange = function(event) 
         {
