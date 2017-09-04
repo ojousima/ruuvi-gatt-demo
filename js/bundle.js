@@ -10316,8 +10316,8 @@ let connect = async function(deviceNamePrefix){
         optionalServices.push(iface.getServiceUUID);
       }
       options.filters = filters;
-      let device = await navigator.bluetooth.requestDevice({options: options,
-                                                            optionalServices: optionalServices});
+      options.optionalServices = optionalServices;
+      let device = await navigator.bluetooth.requestDevice(options);
       handle = await device.gatt.connect();
       console.log('Getting Services...');
       services = await handle.getPrimaryServices();
