@@ -10316,13 +10316,23 @@ let connect = async function(deviceNamePrefix){
       for(const iface of serviceList) {
         optionalServices.push(iface.getServiceUUID());
       }
+      //XXX test invalid
+      optionalServices.push("0x1234");
       options.filters = filters;
       options.optionalServices = optionalServices;
-      options.acceptAllDevices = true;
+      //options.acceptAllDevices = true;
       let device = await navigator.bluetooth.requestDevice(options);
       handle = await device.gatt.connect();
       console.log('Getting Services...');
-      services = await handle.getPrimaryServices();
+      //Work around bug in web blue implementation which fails on getting all services
+      let services = [];
+      for(const iface of serviceList) {
+        let service = await handle.getPrimaryService(iface.getServiceUUID());
+        if(service){
+          services.push(service);
+        }
+      }
+      
       await initServices(handle, services);
     } catch (error) {
       console.log("Error: " + error);
