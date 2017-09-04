@@ -10447,9 +10447,9 @@ class serviceInterface{
   }
 
   getCharacteristicByUUID(uuid){
-    for(characteristic in this.characteristics){
-      if(characteristic.UUID == uuid)
-        return characteristic;
+    for(let ii = 0; ii < this.characteristics.length; ii++){
+      if(this.characteristic[ii].UUID == uuid)
+        return this.characteristic[ii];
     }
     return 0; 
   }
@@ -10495,6 +10495,8 @@ class serviceInterface{
       let characteristics = this.getCharacteristicUUIDs();
       for(let ii = 0; ii < characteristics.length; ii++){
         let characteristic = this.getCharacteristicByUUID(characteristics[ii]);
+        //Continue if characteristic is not known in service
+        if(!characteristic) {continue;}
         characteristic.handle = await this.serviceHandle.getCharacteristic(this.TX.UUID);
         characteristic.onChange = function(event) 
         {
