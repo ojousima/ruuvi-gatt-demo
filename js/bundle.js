@@ -10313,7 +10313,7 @@ let connect = async function(deviceNamePrefix){
       /** List services we can use **/
       let optionalServices = [];
       for(const iface of serviceList) {
-        optionalServices.push(iface.getServiceUUID);
+        optionalServices.push(iface.getServiceUUID());
       }
       options.filters = filters;
       options.optionalServices = optionalServices;
