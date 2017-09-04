@@ -10310,6 +10310,11 @@ let connect = async function(deviceNamePrefix){
       let filters = [];
       filters.push({namePrefix: deviceNamePrefix});
       let options = {};
+      /** List services we can use **/
+      let optionalServices = [];
+      for(const iface of serviceList) {
+        optionalServices.push(iface.getServiceUUID);
+      }
       options.filters = filters;
       let device = await navigator.bluetooth.requestDevice(options);
       handle = await device.gatt.connect();
