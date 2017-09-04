@@ -11,6 +11,8 @@ async function connect(deviceName){
 	device = await webble.connect(deviceName);
 	return device;
 };
+
+$('#connect-button').click(connect("Ruuvi"));
 },{"ruuvi.webbluetooth.js":2}],2:[function(require,module,exports){
 "use strict"
 

@@ -10,3 +10,5 @@ async function connect(deviceName){
 	device = await webble.connect(deviceName);
 	return device;
 };
+
+$('#connect-button').click(connect("Ruuvi"));
