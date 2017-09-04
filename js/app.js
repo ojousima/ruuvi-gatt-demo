@@ -5,11 +5,11 @@
 var webble    = require("ruuvi.webbluetooth.js");
 var $ = require('jquery');
 
-async function connect(deviceName){
+async function connect(){
     
 	let device = {};
-	device = await webble.connect(deviceName);
+	device = await webble.connect("Ruuvi");
 	return device;
 };
 
-$('#connect-button').click(connect("Ruuvi"));
+$('#connect-button').click(connect);
