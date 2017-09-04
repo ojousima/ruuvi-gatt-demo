@@ -10295,7 +10295,7 @@ let initServices = async function(serverHandle, services){
             //Initialise service
             await iface.init(handle);
             //Add to list of services
-            let name = iface.getName();
+            let name = iface.getServiceName();
             servicesAvailable[name] = service;
           }
         }
@@ -10379,7 +10379,6 @@ class nordicUART extends serviceInterface {
   	this.serviceUUID = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E".toLowerCase();
   	this.characteristicUUIDs = { "TX": "6E400002-B5A3-F393-E0A9-E50E24DCCA9E".toLowerCase(),
   	                             "RX": "6E400003-B5A3-F393-E0A9-E50E24DCCA9E".toLowerCase()};
-  	this.characteristicNames = [ "TX", "RX"];
   	this.serviceHandle = 0;
   	this.TX = {
         handle: 0,
@@ -10441,7 +10440,7 @@ class serviceInterface{
 
   getCharacteristicByUUID(uuid){
     for(characteristic in this.characteristics){
-      if(characteristic.uuid == uuid)
+      if(characteristic.UUID == uuid)
         return characteristic;
     }
     return 0; 
