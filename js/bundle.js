@@ -10448,8 +10448,8 @@ class serviceInterface{
 
   getCharacteristicByUUID(uuid){
     for(let ii = 0; ii < this.characteristics.length; ii++){
-      if(this.characteristic[ii].UUID == uuid)
-        return this.characteristic[ii];
+      if(this.characteristics[ii].UUID == uuid)
+        return this.characteristics[ii];
     }
     return 0; 
   }
