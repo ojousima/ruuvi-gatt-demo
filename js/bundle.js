@@ -10275,10 +10275,11 @@ return jQuery;
  */
 "use strict";
 var NORDIC_UART = require("./services/nordic_uart.js");
+var uart = new NORDIC_UART();
 
 var handle = {};
 /** Known services **/
-var serviceList = [NORDIC_UART];
+var serviceList = [uart];
 /** Initialized services **/
 var servicesAvailable = {};
 
