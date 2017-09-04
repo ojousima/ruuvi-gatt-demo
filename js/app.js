@@ -3,6 +3,7 @@
  */
 "use strict";
 let webble    = require("ruuvi.webbluetooth.js");
+require('jquery');
 
 async function connect(deviceName){
     
