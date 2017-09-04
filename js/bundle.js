@@ -10314,7 +10314,7 @@ let connect = async function(deviceNamePrefix){
       let device = await navigator.bluetooth.requestDevice(options);
       handle = await device.gatt.connect();
       console.log('Getting Services...');
-      services = await server.getPrimaryServices();
+      services = await handle.getPrimaryServices();
       await initServices(handle, services);
     } catch (error) {
       console.log("Error: " + error);
