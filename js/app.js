@@ -15,7 +15,7 @@ var addAccelerationToDataSets = function (data) {
   
   now += 10;
   for (var i = 0; i < accelerationData.length; i++) {
-    accelerationData[i].append(time, valueArray[i]);
+    accelerationData[i].append(now, valueArray[i]);
   }
 };
 
