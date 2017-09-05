@@ -10553,9 +10553,8 @@ class serviceInterface{
           }
         }
         //TODO: Verify scope of "this" after bind
-        characteristic.onChange.bind(characteristic);
         characteristic.handle.addEventListener('characteristicvaluechanged',
-                                                characteristic.onChange);
+                                                characteristic.onChange.bind(characteristic));
       }  
     } catch (error) {
       console.log(this.serviceName + " error: " + error);
