@@ -10545,7 +10545,10 @@ class serviceInterface{
         characteristic.handle = await this.serviceHandle.getCharacteristic(characteristic.UUID);
         characteristic.onChange = function(event) 
         {
+          //XXX
+          console.log("Received data");
           if(this.callback){
+            console.log("Handling data");
             callback(event.target.value);
           }
         }
