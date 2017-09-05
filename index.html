@@ -19,15 +19,20 @@
       <select disabled="true">
         <option value="ACCELERATION">Acceleration</option>
       </select>
+    </p>
+    <p>
       <span>Source:</span>
       <select disabled="true">
         <option value="USER_GRAPH_0">Graph 0</option>
       </select>
+    </p>
+    <p>      
       <span>Type:</span>
       <select disabled="true">
         <option value="SENSOR_CONFIGURATION">Sensor configuration</option>
       </select>
     </p>
+    <p>
     <span>Sample rate:</span>
     <select>
         <option value="0">Off</option>
@@ -39,10 +44,14 @@
         <option value="200">200 Hz</option>
         <option value="SAMPLE_RATE_MAX">MAX</option>
     </select>
+    </p>
+    <p>
     <span>Transmission rate:</span>
       <select disabled="true">
         <option value="SAMPLE_RATE">Sample rate</option>
     </select>
+    </p>
+    <p>
     <span>Scale:</span>
       <select>
         <option value="SCALE_MAX">MAX</option>
@@ -52,6 +61,8 @@
         <option value="8">8 G</option>
         <option value="16">16 G</option>
     </select>
+    </p>
+    <p>
     <span>Resolution:</span>
       <select>
         <option value="RESOLUTION_MAX">MAX</option>
@@ -60,6 +71,31 @@
         <option value="10">10 bits</option>
         <option value="12">12 bits</option>
     </select>
+    </p>
+    <p>
+    <span>DSP function:</span>
+      <select disabled="true">
+        <option value="DSP_LAST">Last value</option>
+    </select>
+    </p>
+    <p>
+    <span>DSP Parameter</span>
+      <select disabled="true">
+        <option value="0">0</option>
+    </select>
+    </p>
+    <p>
+      <span>Send to:</span>
+      <form>
+      <input type="checkbox" name="target" value="BLE_ADVERISEMENT" disabled="true">BLE Advertisement<br>
+      <input type="checkbox" name="target" value="BLE_GATT">BLE GATT<br>
+      <input type="checkbox" name="target" value="PROPRIETARY" disabled="true">Proprietary protocol<br>
+      <input type="checkbox" name="target" value="NFC" disabled="true">NFC<br>
+      <input type="checkbox" name="target" value="RAM" disabled="true">RAM<br>
+      <input type="checkbox" name="target" value="FLASH" disabled="true">FLASH<br>
+      </form>
+    </select>
+    </p>
     </div>
   </div>
 </div>
