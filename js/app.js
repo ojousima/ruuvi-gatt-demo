@@ -7,13 +7,14 @@ var $ = require('jquery');
 var smoothie = require('smoothie');
 
 var now = 0;
+var accelerationData = [new smoothie.TimeSeries(), new smoothie.TimeSeries(), new smoothie.TimeSeries(), new smoothie.TimeSeries()];
 var addAccelerationToDataSets = function (data) {
 
-  valueArray = new Uint16Array(data, 3);
+  let valueArray = new Uint16Array(data, 3);
   
   now += 10;
   for (var i = 0; i < dataSets.length; i++) {
-    dataSets[i].append(time, valueArray[i]);
+    accelerationData[i].append(time, valueArray[i]);
   }
 };
 
@@ -27,7 +28,6 @@ var seriesOptions = [
 var initGraph = function() {
 
   // Initialize an empty TimeSeries for each CPU.
-  var accelerationData = [new smoothie.TimeSeries(), new smoothie.TimeSeries(), new smoothie.TimeSeries(), new smoothie.TimeSeries()];
 
 
   // Build the timeline
@@ -49,7 +49,7 @@ var connect = async function(){
 	let uart = 	services["Nordic UART"];
 	await uart.registerNotifications(uart.TX.UUID, addAccelerationToDataSets);
 	//XXX use ruuvi.endpoints.js create
-    let continuousAcceleration = new Uint8Array([0x40,0x60,0x01,100,251,10,252,1,0,2,0]);
+    let continuousAcceleration = new Uint8Array([0x40,0x60,0x01,25,251,10,252,1,0,2,0]);
 	await uart.writeCharacteristic(uart.RX.UUID, continuousAcceleration);
 	return device;
 };
