@@ -14,6 +14,8 @@ var addAccelerationToDataSets = function (data) {
   let valueArray = new Uint16Array(payload);
   
   now += 10;
+  let rtc = new Date().getTime();
+  if(rtc-now > 500){ now = rtc};
   for (var i = 0; i < accelerationData.length; i++) {
     accelerationData[i].append(now, valueArray[i]);
   }
