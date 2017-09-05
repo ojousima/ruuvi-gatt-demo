@@ -50,8 +50,8 @@ var connect = async function(){
 	let uart = 	services["Nordic UART"];
 	await uart.registerNotifications(uart.RX.uuid, addAccelerationToDataSets);
 	//XXX use ruuvi.endpoints.js create
-    let continuousAcceleration= new Uint8Array([0x40,0x60,0x01,100,251,10,252,1,0,2,0]);
-	await uart.writeCharacteristic(uart.TX.uuid, value);
+    let continuousAcceleration = new Uint8Array([0x40,0x60,0x01,100,251,10,252,1,0,2,0]);
+	await uart.writeCharacteristic(uart.TX.uuid, continuousAcceleration);
 	return device;
 };
 
