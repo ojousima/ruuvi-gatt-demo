@@ -10542,7 +10542,7 @@ class serviceInterface{
         let characteristic = this.getCharacteristicByUUID(characteristics[ii]);
         //Continue if characteristic is not known in service
         if(!characteristic) {continue;}
-        characteristic.handle = await this.serviceHandle.getCharacteristic(this.TX.UUID);
+        characteristic.handle = await this.serviceHandle.getCharacteristic(characteristic.UUID);
         characteristic.onChange = function(event) 
         {
           if(this.callback){
