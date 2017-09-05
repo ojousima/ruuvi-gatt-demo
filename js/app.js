@@ -45,7 +45,7 @@ var connect = async function(){
 	device = await webble.connect("Ruuvi");
 	now = new Date().getTime();
 	initGraph();
-	let services = device.getServices();
+	let services = webble.getServices();
 	let uart = 	services["Nordic UART"];
 	await uart.registerNotifications(uart.RX.uuid, addAccelerationToDataSets);
 	//XXX use ruuvi.endpoints.js create
