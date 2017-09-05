@@ -6,10 +6,14 @@ var webble    = require("ruuvi.webbluetooth.js");
 var $ = require('jquery');
 var smoothie = require('smoothie');
 
+var now = 0;
+var addAccelerationToDataSets = function (data) {
 
-var addRandomValueToDataSets = function (time, dataSets) {
+  valueArray = new Uint16Array(data, 3);
+  
+  now += 10;
   for (var i = 0; i < dataSets.length; i++) {
-    dataSets[i].append(time, Math.random());
+    dataSets[i].append(time, valueArray[i]);
   }
 };
 
@@ -25,14 +29,6 @@ var initGraph = function() {
   // Initialize an empty TimeSeries for each CPU.
   var accelerationData = [new smoothie.TimeSeries(), new smoothie.TimeSeries(), new smoothie.TimeSeries(), new smoothie.TimeSeries()];
 
-  var now = new Date().getTime();
-  for (var t = now - 1000 * 50; t <= now; t += 1000) {
-    addRandomValueToDataSets(t, accelerationData);
-  }
-  // Every second, simulate a new set of readings being taken from each CPU.
-  setInterval(function() {
-    addRandomValueToDataSets(new Date().getTime(), accelerationData);
-  }, 1000);
 
   // Build the timeline
   var timeline = new smoothie.SmoothieChart({ responsive: true, millisPerPixel: 20, grid: { strokeStyle: '#555555', lineWidth: 1, millisPerLine: 1000, verticalSections: 4 }});
@@ -47,7 +43,14 @@ var connect = async function(){
     console.log("connecting");
 	let device = {};
 	device = await webble.connect("Ruuvi");
+	now = new Date().getTime();
 	initGraph();
+	let services = device.getServices();
+	let uart = 	services["Nordic UART"];
+	await uart.registerNotifications(uart.RX.uuid, addAccelerationToDataSets);
+	//XXX use ruuvi.endpoints.js create
+    let continuousAcceleration= new Uint8Array([0x40,0x60,0x01,100,251,10,252,1,0,2,0]);
+	await uart.writeCharacteristic(uart.TX.uuid, value);
 	return device;
 };
 
