@@ -12,7 +12,7 @@ var addRandomValueToDataSets = function (time, dataSets) {
   for (var i = 0; i < dataSets.length; i++) {
     dataSets[i].append(time, Math.random());
   }
-}
+};
 
 var seriesOptions = [
   { strokeStyle: 'rgba(255, 0, 0, 1)', fillStyle: 'rgba(255, 0, 0, 0.1)', lineWidth: 3 },
@@ -40,7 +40,7 @@ var initGraph = function() {
   for (var i = 0; i < accelerationData.length; i++) {
     timeline.addTimeSeries(accelerationData[i], seriesOptions[i]);
   }
-  timeline.streamTo(document.getElementById("chart"), 1000);
+  timeline.streamTo($("#chart"), 1000);
 };
 
 
