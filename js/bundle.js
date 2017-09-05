@@ -10430,9 +10430,9 @@ class nordicUART extends serviceInterface {
         value: 0,
         callback: 0, // TODO: Can permissions be read from characteristic?
         permissions: {
-        "read":  0,
-        "write": 1,
-        "notify": 0,
+        "read":  1,
+        "write": 0,
+        "notify": 1,
         "indicate": 0
        }
   	};
@@ -10443,9 +10443,9 @@ class nordicUART extends serviceInterface {
         value: 0,
         callback: 0,
         permissions: {
-        "read":  1,
-        "write": 0,
-        "notify": 1,
+        "read":  0,
+        "write": 1,
+        "notify": 0,
         "indicate": 0
        }
   	};
