@@ -36,11 +36,11 @@ var initGraph = function() {
   }, 1000);
 
   // Build the timeline
-  var timeline = new smoothie.SmoothieChart({ millisPerPixel: 20, grid: { strokeStyle: '#555555', lineWidth: 1, millisPerLine: 1000, verticalSections: 4 }});
+  var timeline = new smoothie.SmoothieChart({ responsive: true, millisPerPixel: 20, grid: { strokeStyle: '#555555', lineWidth: 1, millisPerLine: 1000, verticalSections: 4 }});
   for (var i = 0; i < accelerationData.length; i++) {
     timeline.addTimeSeries(accelerationData[i], seriesOptions[i]);
   }
-  timeline.streamTo($("#chart"), 1000);
+  timeline.streamTo($("#chart")[0], 1000);
 };
 
 
