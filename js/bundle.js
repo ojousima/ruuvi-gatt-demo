@@ -12,9 +12,9 @@ var accelerationData = [new smoothie.TimeSeries(), new smoothie.TimeSeries(), ne
 var addAccelerationToDataSets = function (data) {
 
   let payload = data.buffer.slice(3, data.byteLength);
-  let valueArray = new DataView(payload.buffer);
+  let valueArray = new DataView(payload);
   
-  now += 10;
+  now += 40;
   let rtc = new Date().getTime();
   if(rtc-now > 500){ now = rtc};
   for (var i = 0; i < accelerationData.length; i++) {
