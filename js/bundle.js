@@ -10543,16 +10543,14 @@ class serviceInterface{
         //Continue if characteristic is not known in service
         if(!characteristic) {continue;}
         characteristic.handle = await this.serviceHandle.getCharacteristic(characteristic.UUID);
+        //Callback can be added later
         characteristic.onChange = function(event) 
         {
-          //XXX
-          console.log("Received data");
           if(this.callback){
-            console.log("Handling data");
-            callback(event.target.value);
+            this.callback(event.target.value);
           }
         }
-        //TODO: Verify scope of "this" after bind
+        //Bind "this" to characteristic
         characteristic.handle.addEventListener('characteristicvaluechanged',
                                                 characteristic.onChange.bind(characteristic));
       }  
