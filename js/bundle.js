@@ -11,8 +11,8 @@ var now = 0;
 var accelerationData = [new smoothie.TimeSeries(), new smoothie.TimeSeries(), new smoothie.TimeSeries(), new smoothie.TimeSeries()];
 var addAccelerationToDataSets = function (data) {
 
-  let payload = data.slice(3);
-  let valueArray = new Uint16Array(payload.buffer);
+  let payload = data.buffer.slice(3, data.byteLength);
+  let valueArray = new Uint16Array(payload);
   
   now += 10;
   for (var i = 0; i < accelerationData.length; i++) {
