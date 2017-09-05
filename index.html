@@ -6,12 +6,50 @@
 </head>
 <body>
 <div>
-  <button id="connect-button">Connect</button>
+  <button id="connect-button">Connect</button> <p> TODO: Status indication, disconnect </p>
 </div>
 <div>
   <!-- Applications-->
   <div>
     <canvas id="chart" style="width:100%; height:200px"></canvas>
+    <div>
+    <p>
+    <!-- TODO: Autogenerate -->
+      <span>Destination:</span>
+      <select disabled="true">
+        <option value="ACCELERATION">Acceleration</option>
+      </select>
+      <span>Source:</span>
+      <select disabled="true">
+        <option value="USER_GRAPH_0">Graph 0</option>
+      </select>
+      <span>Type:</span>
+      <select disabled="true">
+        <option value="SENSOR_CONFIGURATION">Sensor configuration</option>
+      </select>
+    </p>
+    <span>Sample rate:</span>
+    <select>
+        <option value="0">Off</option>
+        <option value="1">1 Hz</option>
+        <option value="10">10 Hz</option>
+        <option value="25">25 Hz</option>
+        <option value="50">50 Hz</option>
+        <option value="100">100 Hz</option>
+        <option value="200">200 Hz</option>
+        <option value="SAMPLE_RATE_MAX">MAX</option>
+    </select>
+    <span>Transmission rate:</span>
+      <select disabled="true">
+        <option value="SAMPLE_RATE">Sample rate</option>
+    </select>
+    <!--
+    <span>Scale:</span>
+      <select disabled="true">
+        <option value="SAMPLE_RATE">Sample rate</option>
+    </select>
+    -->
+    </div>
   </div>
 </div>
 <script src="js/bundle.js" type="application/javascript"></script>
