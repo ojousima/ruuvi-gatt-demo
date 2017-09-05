@@ -48,10 +48,10 @@ var connect = async function(){
 	initGraph();
 	let services = webble.getServices();
 	let uart = 	services["Nordic UART"];
-	await uart.registerNotifications(uart.RX.uuid, addAccelerationToDataSets);
+	await uart.registerNotifications(uart.RX.UUID, addAccelerationToDataSets);
 	//XXX use ruuvi.endpoints.js create
     let continuousAcceleration = new Uint8Array([0x40,0x60,0x01,100,251,10,252,1,0,2,0]);
-	await uart.writeCharacteristic(uart.TX.uuid, continuousAcceleration);
+	await uart.writeCharacteristic(uart.TX.UUID, continuousAcceleration);
 	return device;
 };
 
