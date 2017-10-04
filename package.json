@@ -1,0 +1,31 @@
+{
+  "name": "ruuvi-gatt-demo",
+  "version": "0.1.0",
+  "description": "Ruuvi Gatt profile demo with web bluetooth",
+  "main": "app/bundle.js",
+  "dependencies": {
+    "browserify": "^14.4.0",
+    "jquery": "^3.2.1",
+    "ruuvi.endpoints.js": "^0.0.6",
+    "ruuvi.webbluetooth.js": "^0.0.31",
+    "smoothie": "^1.32.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ojousima/ruuvi-gatt-demo.git"
+  },
+  "keywords": [
+    "Ruuvi",
+    "Web-bluetooth"
+  ],
+  "author": "Otso Jousimaa",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/ojousima/ruuvi-gatt-demo/issues"
+  },
+  "homepage": "https://github.com/ojousima/ruuvi-gatt-demo#readme"
+}
