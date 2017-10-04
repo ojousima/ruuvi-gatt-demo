@@ -19,7 +19,7 @@ var saveData = function() {
   let a = document.createElement("a");
   document.body.appendChild(a);
   a.style = "display: none";
-  let data = accelerationLog;
+  let data = graph.rawLog;
   let blob = new Blob([data.join()], {type: "octet/stream"});
   let url = window.URL.createObjectURL(blob);
   a.href = url;
@@ -74,36 +74,63 @@ var seriesOptions = [
 var initGraph = function() {
 
   // Build the timeline
-  var timeline = new smoothie.SmoothieChart({ responsive: true, millisPerPixel: 40, grid: { strokeStyle: '#555555', lineWidth: 1, millisPerLine: 2000, verticalSections: 4 }});
+  var raw_timeline = new smoothie.SmoothieChart({ responsive: true, millisPerPixel: 40, grid: { strokeStyle: '#555555', lineWidth: 1, millisPerLine: 2000, verticalSections: 4 }});
   for (var i = 0; i < graphData.length; i++) {
-    timeline.addTimeSeries(graphData[i], seriesOptions[i]);
+    raw_timeline.addTimeSeries(graphData[i], seriesOptions[i]);
   }
-  timeline.streamTo($("#chart")[0], 1000);
+  raw_timeline.streamTo($("#raw_chart")[0], 1000);
+
+  var dsp_timeline = new smoothie.SmoothieChart({ responsive: true, millisPerPixel: 40, grid: { strokeStyle: '#555555', lineWidth: 1, millisPerLine: 2000, verticalSections: 4 }});
+  for (var i = 0; i < graphData.length; i++) {
+    dsp_timeline.addTimeSeries(graphData[i], seriesOptions[i]);
+  }
+  dsp_timeline.streamTo($("#dsp_chart")[0], 1000);
 };
 
 var now = 0;
-var graphData = [new smoothie.TimeSeries(), new smoothie.TimeSeries(), new smoothie.TimeSeries(), new smoothie.TimeSeries()];
-var graphLog = [];
+var rawData = [new smoothie.TimeSeries(), new smoothie.TimeSeries(), new smoothie.TimeSeries(), new smoothie.TimeSeries()];
+var rawLog = [];
+var dspData = [new smoothie.TimeSeries(), new smoothie.TimeSeries(), new smoothie.TimeSeries(), new smoothie.TimeSeries()];
+var dspLog = [];
+
 var addToDataSets = function (data) {
 
+  let header = data.buffer.slice(0, 3);
   let payload = data.buffer.slice(3, data.byteLength);
   let valueArray = new DataView(payload);
-  //TODO: CHeck data destination endpoint
+  let headerArray = new DataView(header);
   
-  now += 40;
-  let rtc = new Date().getTime();
-  if(rtc-now > 500){ now = rtc};
-  let graphLogEntry = [];
-  graphLogEntry.push(now);
-  for (var i = 0; i < graphData.length; i++) {
-    graphData[i].append(now, valueArray.getInt16(i*2, true));
-    graphLogEntry.push(valueArray.getInt16(i*2, true));
+  if(headerArray.getUint8(0) == 0x60)
+  {
+    now += 40;
+    let rtc = new Date().getTime();
+    if(rtc-now > 500){ now = rtc};
+    let graphLogEntry = [];
+    graphLogEntry.push(now);
+    for (var i = 0; i < dataSet.length; i++) {
+      rawData[i].append(now, valueArray.getInt16(i*2, true));
+      graphLogEntry.push(valueArray.getInt16(i*2, true));
+    }
+    rawLog.push(graphLogEntry);
   }
+  if(headerArray.getUint8(0) == 0x61)
+  {
+    let rtc = new Date().getTime();
+    let graphLogEntry = [];
+    graphLogEntry.push(rtc);
+    for (var i = 0; i < dataSet.length; i++) {
+      dspData[i].append(now, valueArray.getInt16(i*2, true));
+      graphLogEntry.push(valueArray.getInt16(i*2, true));
+    }
+    dspLog.push(graphLogEntry);
+  }    
 };
 
 module.exports = {
 	initGraph: initGraph,
-	addToDataSets: addToDataSets
+	addToDataSets: addToDataSets,
+  rawLog: rawLog,
+  dspLog: dspLog
 };
 
 },{"jquery":3,"smoothie":9}],3:[function(require,module,exports){

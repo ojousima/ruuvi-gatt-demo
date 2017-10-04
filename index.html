@@ -12,7 +12,13 @@
 <div>
   <!-- Applications-->
   <div>
-    <canvas id="chart" style="width:100%; height:200px"></canvas>
+    <div>
+      <h3>Raw acceleration values</h3>
+      <canvas id="raw_chart" style="width:100%; height:200px"></canvas>
+      <h3>DSP processed acceleration values</h3>
+      <canvas id="dsp_chart" style="width:100%; height:200px"></canvas>
+      <span>X: <span id="dsp_x"></span> Y: <span id="dsp_y"></span> Z: <span id="dsp_z"></span> SUM: <span id="dsp_sum"></span></span>
+    </div>
     <div>
     <p>
     <!-- TODO: Autogenerate -->

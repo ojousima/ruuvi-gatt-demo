@@ -18,7 +18,7 @@ var saveData = function() {
   let a = document.createElement("a");
   document.body.appendChild(a);
   a.style = "display: none";
-  let data = accelerationLog;
+  let data = graph.rawLog;
   let blob = new Blob([data.join()], {type: "octet/stream"});
   let url = window.URL.createObjectURL(blob);
   a.href = url;
