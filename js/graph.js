@@ -3,6 +3,7 @@
  */
 "use strict";
 var smoothie = require('smoothie');
+var $ = require('jquery');
 
 var seriesOptions = [
   { strokeStyle: 'rgba(255, 0, 0, 1)', fillStyle: 'rgba(255, 0, 0, 0.1)', lineWidth: 3 },

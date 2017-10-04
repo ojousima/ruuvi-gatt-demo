@@ -8,8 +8,8 @@ var endpoints = require("ruuvi.endpoints.js");
 var $ = require('jquery');
 var graph = require('./graph.js');
 
-var GRAPH_ENDPOINT = 0x50;
-var STDEV_ENDPOINT = 0x50;
+var GRAPH_ENDPOINT = 0x60;
+var STDEV_ENDPOINT = 0x61;
 
 
 
@@ -62,6 +62,7 @@ graph.initGraph();
  */
 "use strict";
 var smoothie = require('smoothie');
+var $ = require('jquery');
 
 var seriesOptions = [
   { strokeStyle: 'rgba(255, 0, 0, 1)', fillStyle: 'rgba(255, 0, 0, 0.1)', lineWidth: 3 },
@@ -105,7 +106,7 @@ module.exports = {
 	addToDataSets: addToDataSets
 };
 
-},{"smoothie":9}],3:[function(require,module,exports){
+},{"jquery":3,"smoothie":9}],3:[function(require,module,exports){
 /*!
  * jQuery JavaScript Library v3.2.1
  * https://jquery.com/

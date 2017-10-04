@@ -7,8 +7,8 @@ var endpoints = require("ruuvi.endpoints.js");
 var $ = require('jquery');
 var graph = require('./graph.js');
 
-var GRAPH_ENDPOINT = 0x50;
-var STDEV_ENDPOINT = 0x50;
+var GRAPH_ENDPOINT = 0x60;
+var STDEV_ENDPOINT = 0x61;
 
 
 
