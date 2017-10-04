@@ -12,27 +12,27 @@ var seriesOptions = [
   { strokeStyle: 'rgba(255, 255, 0, 1)', fillStyle: 'rgba(255, 255, 0, 0.1)', lineWidth: 3 }
 ];
 
-var initGraph = function() {
-
-  // Build the timeline
-  var raw_timeline = new smoothie.SmoothieChart({ responsive: true, millisPerPixel: 40, grid: { strokeStyle: '#555555', lineWidth: 1, millisPerLine: 2000, verticalSections: 4 }});
-  for (var i = 0; i < graphData.length; i++) {
-    raw_timeline.addTimeSeries(graphData[i], seriesOptions[i]);
-  }
-  raw_timeline.streamTo($("#raw_chart")[0], 1000);
-
-  var dsp_timeline = new smoothie.SmoothieChart({ responsive: true, millisPerPixel: 40, grid: { strokeStyle: '#555555', lineWidth: 1, millisPerLine: 2000, verticalSections: 4 }});
-  for (var i = 0; i < graphData.length; i++) {
-    dsp_timeline.addTimeSeries(graphData[i], seriesOptions[i]);
-  }
-  dsp_timeline.streamTo($("#dsp_chart")[0], 1000);
-};
-
 var now = 0;
 var rawData = [new smoothie.TimeSeries(), new smoothie.TimeSeries(), new smoothie.TimeSeries(), new smoothie.TimeSeries()];
 var rawLog = [];
 var dspData = [new smoothie.TimeSeries(), new smoothie.TimeSeries(), new smoothie.TimeSeries(), new smoothie.TimeSeries()];
 var dspLog = [];
+
+var initGraph = function() {
+
+  // Build the timeline
+  var raw_timeline = new smoothie.SmoothieChart({ responsive: true, millisPerPixel: 40, grid: { strokeStyle: '#555555', lineWidth: 1, millisPerLine: 2000, verticalSections: 4 }});
+  for (var i = 0; i < rawData.length; i++) {
+    raw_timeline.addTimeSeries(rawData[i], seriesOptions[i]);
+  }
+  raw_timeline.streamTo($("#raw_chart")[0], 1000);
+
+  var dsp_timeline = new smoothie.SmoothieChart({ responsive: true, millisPerPixel: 40, grid: { strokeStyle: '#555555', lineWidth: 1, millisPerLine: 2000, verticalSections: 4 }});
+  for (var i = 0; i < dspData.length; i++) {
+    dsp_timeline.addTimeSeries(dspData[i], seriesOptions[i]);
+  }
+  dsp_timeline.streamTo($("#dsp_chart")[0], 1000);
+};
 
 var addToDataSets = function (data) {
 
@@ -48,7 +48,7 @@ var addToDataSets = function (data) {
     if(rtc-now > 500){ now = rtc};
     let graphLogEntry = [];
     graphLogEntry.push(now);
-    for (var i = 0; i < dataSet.length; i++) {
+    for (var i = 0; i < rawData.length; i++) {
       rawData[i].append(now, valueArray.getInt16(i*2, true));
       graphLogEntry.push(valueArray.getInt16(i*2, true));
     }
@@ -59,7 +59,7 @@ var addToDataSets = function (data) {
     let rtc = new Date().getTime();
     let graphLogEntry = [];
     graphLogEntry.push(rtc);
-    for (var i = 0; i < dataSet.length; i++) {
+    for (var i = 0; i < dspData.length; i++) {
       dspData[i].append(now, valueArray.getInt16(i*2, true));
       graphLogEntry.push(valueArray.getInt16(i*2, true));
     }
