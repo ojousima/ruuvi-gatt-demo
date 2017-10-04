@@ -3,59 +3,54 @@
  */
 "use strict";
 var webble    = require("ruuvi.webbluetooth.js");
+var endpoints = require("ruuvi.endpoints.js");
 var $ = require('jquery');
-var smoothie = require('smoothie');
+var graph = require('./graph.js');
 
-var now = 0;
-var accelerationData = [new smoothie.TimeSeries(), new smoothie.TimeSeries(), new smoothie.TimeSeries(), new smoothie.TimeSeries()];
-var addAccelerationToDataSets = function (data) {
-
-  let payload = data.buffer.slice(3, data.byteLength);
-  let valueArray = new DataView(payload);
-  
-  now += 40;
-  let rtc = new Date().getTime();
-  if(rtc-now > 500){ now = rtc};
-  for (var i = 0; i < accelerationData.length; i++) {
-    accelerationData[i].append(now, valueArray.getInt16(i*2, true));
-  }
-};
-
-var seriesOptions = [
-  { strokeStyle: 'rgba(255, 0, 0, 1)', fillStyle: 'rgba(255, 0, 0, 0.1)', lineWidth: 3 },
-  { strokeStyle: 'rgba(0, 255, 0, 1)', fillStyle: 'rgba(0, 255, 0, 0.1)', lineWidth: 3 },
-  { strokeStyle: 'rgba(0, 0, 255, 1)', fillStyle: 'rgba(0, 0, 255, 0.1)', lineWidth: 3 },
-  { strokeStyle: 'rgba(255, 255, 0, 1)', fillStyle: 'rgba(255, 255, 0, 0.1)', lineWidth: 3 }
-];
-
-var initGraph = function() {
-
-  // Initialize an empty TimeSeries for each CPU.
+var GRAPH_ENDPOINT = 0x50;
+var STDEV_ENDPOINT = 0x50;
 
 
-  // Build the timeline
-  var timeline = new smoothie.SmoothieChart({ responsive: true, millisPerPixel: 20, grid: { strokeStyle: '#555555', lineWidth: 1, millisPerLine: 1000, verticalSections: 4 }});
-  for (var i = 0; i < accelerationData.length; i++) {
-    timeline.addTimeSeries(accelerationData[i], seriesOptions[i]);
-  }
-  timeline.streamTo($("#chart")[0], 1000);
-};
 
+
+//https://jsfiddle.net/dvuyka/z8ouj1np/
+var saveData = function() {
+  let a = document.createElement("a");
+  document.body.appendChild(a);
+  a.style = "display: none";
+  let data = accelerationLog;
+  let blob = new Blob([data.join()], {type: "octet/stream"});
+  let url = window.URL.createObjectURL(blob);
+  a.href = url;
+  a.download = "data.csv";
+  a.click();
+  window.URL.revokeObjectURL(url);
+}
+
+var connected = false;
+var uart = {};
 
 var connect = async function(){
-    console.log("connecting");
-	let device = {};
-	device = await webble.connect("Ruuvi");
-	now = new Date().getTime();
-	initGraph();
-	let services = webble.getServices();
-	let uart = 	services["Nordic UART"];
-	await uart.registerNotifications(uart.TX.UUID, addAccelerationToDataSets);
-	//XXX use ruuvi.endpoints.js create
-    let continuousAcceleration = new Uint8Array([0x40,0x60,0x01,25,251,10,252,1,0,2,0]);
-	await uart.writeCharacteristic(uart.RX.UUID, continuousAcceleration);
-	return device;
+  console.log("connecting");
+  let device = {};
+  device = await webble.connect("Ruuvi");
+  now = new Date().getTime();
+  let services = webble.getServices();
+  uart = services["Nordic UART"];
+  await uart.registerNotifications(uart.TX.UUID, graph.addToDataSets);
+
+  return device;
+};
+
+var configure = async function(){
+  //XXX use ruuvi.endpoints.js create
+  let continuousAcceleration = new Uint8Array([0x40,0x60,0x01,25,251,10,252,1,0,2,0]);
+  let stdevAcceleration      = new Uint8Array([0x50,0x61,0x16,0x40,1,0,0,5,25,2,0]);
+  //await uart.writeCharacteristic(uart.RX.UUID, continuousAcceleration);
 };
 
 $('#connect-button').click(connect);
+$('#configure-button').click(configure);
+$('#save-button').click(saveData);
+graph.initGraph();
 

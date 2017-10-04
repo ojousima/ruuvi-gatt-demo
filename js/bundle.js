@@ -4,23 +4,64 @@
  */
 "use strict";
 var webble    = require("ruuvi.webbluetooth.js");
+var endpoints = require("ruuvi.endpoints.js");
 var $ = require('jquery');
-var smoothie = require('smoothie');
+var graph = require('./graph.js');
 
-var now = 0;
-var accelerationData = [new smoothie.TimeSeries(), new smoothie.TimeSeries(), new smoothie.TimeSeries(), new smoothie.TimeSeries()];
-var addAccelerationToDataSets = function (data) {
+var GRAPH_ENDPOINT = 0x50;
+var STDEV_ENDPOINT = 0x50;
 
-  let payload = data.buffer.slice(3, data.byteLength);
-  let valueArray = new DataView(payload);
-  
-  now += 40;
-  let rtc = new Date().getTime();
-  if(rtc-now > 500){ now = rtc};
-  for (var i = 0; i < accelerationData.length; i++) {
-    accelerationData[i].append(now, valueArray.getInt16(i*2, true));
-  }
+
+
+
+//https://jsfiddle.net/dvuyka/z8ouj1np/
+var saveData = function() {
+  let a = document.createElement("a");
+  document.body.appendChild(a);
+  a.style = "display: none";
+  let data = accelerationLog;
+  let blob = new Blob([data.join()], {type: "octet/stream"});
+  let url = window.URL.createObjectURL(blob);
+  a.href = url;
+  a.download = "data.csv";
+  a.click();
+  window.URL.revokeObjectURL(url);
+}
+
+var connected = false;
+var uart = {};
+
+var connect = async function(){
+  console.log("connecting");
+  let device = {};
+  device = await webble.connect("Ruuvi");
+  now = new Date().getTime();
+  let services = webble.getServices();
+  uart = services["Nordic UART"];
+  await uart.registerNotifications(uart.TX.UUID, graph.addToDataSets);
+
+  return device;
 };
+
+var configure = async function(){
+  //XXX use ruuvi.endpoints.js create
+  let continuousAcceleration = new Uint8Array([0x40,0x60,0x01,25,251,10,252,1,0,2,0]);
+  let stdevAcceleration      = new Uint8Array([0x50,0x61,0x16,0x40,1,0,0,5,25,2,0]);
+  //await uart.writeCharacteristic(uart.RX.UUID, continuousAcceleration);
+};
+
+$('#connect-button').click(connect);
+$('#configure-button').click(configure);
+$('#save-button').click(saveData);
+graph.initGraph();
+
+
+},{"./graph.js":2,"jquery":3,"ruuvi.endpoints.js":4,"ruuvi.webbluetooth.js":6}],2:[function(require,module,exports){
+/*jshint 
+    node: true
+ */
+"use strict";
+var smoothie = require('smoothie');
 
 var seriesOptions = [
   { strokeStyle: 'rgba(255, 0, 0, 1)', fillStyle: 'rgba(255, 0, 0, 0.1)', lineWidth: 3 },
@@ -31,37 +72,40 @@ var seriesOptions = [
 
 var initGraph = function() {
 
-  // Initialize an empty TimeSeries for each CPU.
-
-
   // Build the timeline
-  var timeline = new smoothie.SmoothieChart({ responsive: true, millisPerPixel: 20, grid: { strokeStyle: '#555555', lineWidth: 1, millisPerLine: 1000, verticalSections: 4 }});
-  for (var i = 0; i < accelerationData.length; i++) {
-    timeline.addTimeSeries(accelerationData[i], seriesOptions[i]);
+  var timeline = new smoothie.SmoothieChart({ responsive: true, millisPerPixel: 40, grid: { strokeStyle: '#555555', lineWidth: 1, millisPerLine: 2000, verticalSections: 4 }});
+  for (var i = 0; i < graphData.length; i++) {
+    timeline.addTimeSeries(graphData[i], seriesOptions[i]);
   }
   timeline.streamTo($("#chart")[0], 1000);
 };
 
+var now = 0;
+var graphData = [new smoothie.TimeSeries(), new smoothie.TimeSeries(), new smoothie.TimeSeries(), new smoothie.TimeSeries()];
+var graphLog = [];
+var addToDataSets = function (data) {
 
-var connect = async function(){
-    console.log("connecting");
-	let device = {};
-	device = await webble.connect("Ruuvi");
-	now = new Date().getTime();
-	initGraph();
-	let services = webble.getServices();
-	let uart = 	services["Nordic UART"];
-	await uart.registerNotifications(uart.TX.UUID, addAccelerationToDataSets);
-	//XXX use ruuvi.endpoints.js create
-    let continuousAcceleration = new Uint8Array([0x40,0x60,0x01,25,251,10,252,1,0,2,0]);
-	await uart.writeCharacteristic(uart.RX.UUID, continuousAcceleration);
-	return device;
+  let payload = data.buffer.slice(3, data.byteLength);
+  let valueArray = new DataView(payload);
+  //TODO: CHeck data destination endpoint
+  
+  now += 40;
+  let rtc = new Date().getTime();
+  if(rtc-now > 500){ now = rtc};
+  let graphLogEntry = [];
+  graphLogEntry.push(now);
+  for (var i = 0; i < graphData.length; i++) {
+    graphData[i].append(now, valueArray.getInt16(i*2, true));
+    graphLogEntry.push(valueArray.getInt16(i*2, true));
+  }
 };
 
-$('#connect-button').click(connect);
+module.exports = {
+	initGraph: initGraph,
+	addToDataSets: addToDataSets
+};
 
-
-},{"jquery":2,"ruuvi.webbluetooth.js":3,"smoothie":6}],2:[function(require,module,exports){
+},{"smoothie":9}],3:[function(require,module,exports){
 /*!
  * jQuery JavaScript Library v3.2.1
  * https://jquery.com/
@@ -10316,7 +10360,181 @@ if ( !noGlobal ) {
 return jQuery;
 } );
 
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
+/*jshint 
+    node: true,
+    esversion: 6
+ */
+"use strict";
+var parser        = require('./parser.js');
+
+/**
+ *  Takes UINT8_T array with 11 bytes as input
+ *  Request Ruuvi Standard Message Object as output,
+ *  usage: 
+ *  let message = parseRuuviStandardMessage(buffer);
+ *  message.source_endpoint
+ *  message.destination_endpoint
+ *  message.type
+ *  message.payload.sample_rate
+ *  message.payload.transmission_rate  
+ *  // and so on. Payload fields are dependend on type.
+ **/
+var parse = function(serialBuffer){
+  return parser(serialBuffer);	
+};
+
+/**
+ * Takes Ruuvi Standard Message
+ * and returns 11-byte long UINT8 array represenstation.
+ *
+ */
+var create = function(message){
+  console.log("TODO: handle: " + message);
+};
+
+module.exports = {
+  parse: parse,
+  create: create
+};
+
+
+
+},{"./parser.js":5}],5:[function(require,module,exports){
+/*jshint 
+    node: true
+ */
+"use strict";
+
+let types = {
+  SENSOR_CONFIGURATION:  0x01, // Configure sensor
+  ACTUATOR_CONFIGRATION: 0x02, // Configure actuator
+  ACKNOWLEDGEMENT:       0x03, // Acknowledge message
+  STATUS_QUERY:          0x04, // Query status from endpoint - returns current configuration
+  DATA_QUERY:            0x05, // Query data from endpoint - returns latest data
+  LOG_QUERY:             0x06, // Query log from endpoint - initiates bulk write
+  CAPABILITY_QUERY:      0x07, // Query endpoint capablities: samplerate, resolution, scale, log, power consumption with settings given in query
+  SAMPLERATE_RESPONSE:   0x08,
+  RESOLUTION_RESPONSE:   0x09,
+  SCALE_RESPONSE:        0x10,
+  LOG_RESPONSE:          0x11,
+  POWER_RESPONSE:        0x12,
+  TIMESTAMP:             0x13,
+  UNKNOWN:               0x14,
+  ERROR:                 0x15,
+  UINT8:                 0x80, // Array of uint8
+  INT8:                  0x81,
+  UINT16:                0x82,
+  INT16:                 0x83,
+  UINT32:                0x84,
+  INT32:                 0x85,
+  UINT64:                0x86, // Single uint64
+  INT64:                 0x87,
+  ASCII:                 0x88  // ASCII array
+};
+
+/** 
+ *  Parses given request payload into object.
+ **/
+let parseType = function(request, data)
+{
+    let valueArray = {};
+    switch(request.type){
+      case types.SENSOR_CONFIGURATION:
+        request.payload.sample_rate = data[3];
+        request.payload.transmission_rate = data[4];
+        request.payload.resolution = data[5];
+        request.payload.scale = data[6];
+        request.payload.dsp_function = data[7];
+        request.payload.dsp_parameter = data[8];
+        request.payload.target = data[9];
+        request.payload.reserved = data[10];
+        break;
+      case types.UINT8:
+        request.payload.values = [];
+        request.payload.values[0] = data[3];
+        request.payload.values[1] = data[4];
+        request.payload.values[2] = data[5];
+        request.payload.values[3] = data[6];
+        request.payload.values[4] = data[7];
+        request.payload.values[5] = data[8];
+        request.payload.values[6] = data[9];
+        request.payload.values[7] = data[10];
+        break;
+      case types.INT8:
+        valueArray = new Int8Array(data, 3);
+        request.payload.values = [];
+        request.payload.values[0] = valueArray[0];
+        request.payload.values[1] = valueArray[1];
+        request.payload.values[2] = valueArray[2];
+        request.payload.values[3] = valueArray[3];
+        request.payload.values[4] = valueArray[4];
+        request.payload.values[5] = valueArray[5];
+        request.payload.values[6] = valueArray[6];
+        request.payload.values[7] = valueArray[7];
+        break;
+      case types.UINT16:
+        valueArray = new Uint16Array(data, 3);
+        request.payload.values = [];
+        request.payload.values[0] = valueArray[0];
+        request.payload.values[1] = valueArray[1];
+        request.payload.values[2] = valueArray[2];
+        request.payload.values[3] = valueArray[3];
+        break;
+      case types.INT16:
+        valueArray = new Int16Array(data, 3);
+        request.payload.values = [];
+        request.payload.values[0] = valueArray[0];
+        request.payload.values[1] = valueArray[1];
+        request.payload.values[2] = valueArray[2];
+        request.payload.values[3] = valueArray[3];
+        break;
+      case types.UINT32:
+        valueArray = new Uint32Array(data, 3);
+        request.payload.values = [];
+        request.payload.values[0] = valueArray[0];
+        request.payload.values[1] = valueArray[1];
+        break;
+      case types.INT32:
+        valueArray = new Int32Array(data, 3);
+        request.payload.values = [];
+        request.payload.values[0] = valueArray[0];
+        request.payload.values[1] = valueArray[1];
+        break;
+      case types.UINT64:
+        valueArray = new Uint32Array(data, 3);
+        request.payload.values = [];
+        request.payload.values[0] = valueArray[0]<<32 + valueArray[1];
+        break;
+      case types.INT64:
+        valueArray = new Int32Array(data, 3);
+        request.payload.values = [];
+        request.payload.values[0] = valueArray[0]<<32 + valueArray[1];
+        break;
+    }
+};
+
+let parseStandardMsg = function(request, data){
+  request.source_endpoint = data[1];
+  request.type = data[2];
+  parseType(request, data);
+};
+
+/** Take raw uint8_t array from RuuviTag and parse it to a request object**/
+module.exports = function(payload) {
+  let data = new Uint8Array(payload);
+  let request = {};
+  request.destination_endpoint = data[0];
+  if(request.destination_endpoint < 0xE0){
+    parseStandardMsg(request, data);
+  }
+  else {
+    request.index = data[1];
+    request.payload = data.slice(2, data.length);
+  }
+  return request;
+};
+},{}],6:[function(require,module,exports){
 /*jshint 
     node: true
  */
@@ -10410,7 +10628,7 @@ module.exports = {
   disconnect        : disconnect,
   getServices       : getServices
 };
-},{"./services/nordic_uart.js":4}],4:[function(require,module,exports){
+},{"./services/nordic_uart.js":7}],7:[function(require,module,exports){
 /*jshint 
     node: true
  */
@@ -10457,7 +10675,7 @@ class nordicUART extends serviceInterface {
 }
 
 module.exports = nordicUART;
-},{"./service_interface.js":5}],5:[function(require,module,exports){
+},{"./service_interface.js":8}],8:[function(require,module,exports){
 /*jshint 
     node: true
  */
@@ -10571,7 +10789,7 @@ class serviceInterface{
   }
 }
 module.exports = serviceInterface;
-},{}],6:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 // MIT License:
 //
 // Copyright (c) 2010-2013, Joe Walnes
