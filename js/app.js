@@ -34,7 +34,6 @@ var connect = async function(){
   console.log("connecting");
   let device = {};
   device = await webble.connect("Ruuvi");
-  now = new Date().getTime();
   let services = webble.getServices();
   uart = services["Nordic UART"];
   await uart.registerNotifications(uart.TX.UUID, graph.addToDataSets);
