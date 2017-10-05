@@ -63,6 +63,10 @@ var addToDataSets = function (data) {
       dspData[i].append(now, valueArray.getInt16(i*2, true));
       graphLogEntry.push(valueArray.getInt16(i*2, true));
     }
+    $("#dsp_x").text(graphLogEntry[1]);
+    $("#dsp_y").text(graphLogEntry[2]);
+    $("#dsp_z").text(graphLogEntry[3]);
+    $("#dsp_sum").text(graphLogEntry[4]);
     dspLog.push(graphLogEntry);
   }    
 };

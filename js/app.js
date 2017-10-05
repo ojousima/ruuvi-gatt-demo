@@ -1,4 +1,4 @@
-/*jshint 
+/*jshint
     node: true
  */
 "use strict";
@@ -10,10 +10,6 @@ var graph = require('./graph.js');
 var GRAPH_ENDPOINT = 0x60;
 var STDEV_ENDPOINT = 0x61;
 
-
-
-
-//https://jsfiddle.net/dvuyka/z8ouj1np/
 var saveData = function() {
   let a = document.createElement("a");
   document.body.appendChild(a);
@@ -52,4 +48,3 @@ $('#connect-button').click(connect);
 $('#configure-button').click(configure);
 $('#save-button').click(saveData);
 graph.initGraph();
-

@@ -1,5 +1,5 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-/*jshint 
+/*jshint
     node: true
  */
 "use strict";
@@ -11,10 +11,6 @@ var graph = require('./graph.js');
 var GRAPH_ENDPOINT = 0x60;
 var STDEV_ENDPOINT = 0x61;
 
-
-
-
-//https://jsfiddle.net/dvuyka/z8ouj1np/
 var saveData = function() {
   let a = document.createElement("a");
   document.body.appendChild(a);
@@ -53,8 +49,6 @@ $('#connect-button').click(connect);
 $('#configure-button').click(configure);
 $('#save-button').click(saveData);
 graph.initGraph();
-
-
 },{"./graph.js":2,"jquery":3,"ruuvi.endpoints.js":4,"ruuvi.webbluetooth.js":6}],2:[function(require,module,exports){
 /*jshint 
     node: true
@@ -121,6 +115,10 @@ var addToDataSets = function (data) {
       dspData[i].append(now, valueArray.getInt16(i*2, true));
       graphLogEntry.push(valueArray.getInt16(i*2, true));
     }
+    $("#dsp_x").text(graphLogEntry[1]);
+    $("#dsp_y").text(graphLogEntry[2]);
+    $("#dsp_z").text(graphLogEntry[3]);
+    $("#dsp_sum").text(graphLogEntry[4]);
     dspLog.push(graphLogEntry);
   }    
 };
