@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="initial-scale=1">
   <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3mobile.css">
 </head>
 <body>
 <div>
-  <button id="connect-button">Connect</button> <button id="save-button">Download CSV</button> 
+  <button id="connect-button">Connect</button> <button id="save-raw-button">Download RAW</button> <button id="save-dsp-button">Download DSP</button> 
   <p> TODO: Status indication, disconnect </p>
 </div>
 <div>
@@ -14,12 +14,12 @@
   <div>
     <div>
       <h3>Raw acceleration values</h3>
-      <canvas id="raw_chart" style="width:100%; height:200px"></canvas>
+      <canvas id="raw_chart" style="width:100%;"></canvas>
       <h3>DSP processed acceleration values</h3>
-      <canvas id="dsp_chart" style="width:100%; height:200px"></canvas>
+      <canvas id="dsp_chart" style="width:100%;"></canvas>
       <span>X: <span id="dsp_x"></span> Y: <span id="dsp_y"></span> Z: <span id="dsp_z"></span> SUM: <span id="dsp_sum"></span></span>
     </div>
-    <div>
+    <div style="display: none;">
     <p>
     <!-- TODO: Autogenerate -->
       <span>Destination:</span>
