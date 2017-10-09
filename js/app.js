@@ -6,21 +6,27 @@ var webble    = require("ruuvi.webbluetooth.js");
 var endpoints = require("ruuvi.endpoints.js");
 var $ = require('jquery');
 var graph = require('./graph.js');
+var FileSaver = require('file-saver');
 
 var GRAPH_ENDPOINT = 0x60;
 var STDEV_ENDPOINT = 0x61;
 
-var saveData = function() {
+var saveRaw = function() {
   let a = document.createElement("a");
   document.body.appendChild(a);
   a.style = "display: none";
   let data = graph.rawLog;
-  let blob = new Blob([data.join()], {type: "octet/stream"});
-  let url = window.URL.createObjectURL(blob);
-  a.href = url;
-  a.download = "data.csv";
-  a.click();
-  window.URL.revokeObjectURL(url);
+  let blob = new Blob([data.join()], {type: "text/plain;charset=utf-8"});
+  FileSaver.saveAs(blob, Date() +"raw.csv");
+}
+
+var saveDSP = function() {
+  let a = document.createElement("a");
+  document.body.appendChild(a);
+  a.style = "display: none";
+  let data = graph.dspLog;
+  let blob = new Blob([data.join()], {type: "text/plain;charset=utf-8"});
+  FileSaver.saveAs(blob, Date() +"dsp.csv");
 }
 
 var connected = false;
@@ -33,7 +39,7 @@ var connect = async function(){
   let services = webble.getServices();
   uart = services["Nordic UART"];
   await uart.registerNotifications(uart.TX.UUID, graph.addToDataSets);
-
+  //TODO: Check result, add connecting overlay
   return device;
 };
 
@@ -46,5 +52,6 @@ var configure = async function(){
 
 $('#connect-button').click(connect);
 $('#configure-button').click(configure);
-$('#save-button').click(saveData);
+$('#save-raw-button').click(saveRaw);
+$('#save-dsp-button').click(saveDSP);
 graph.initGraph();
