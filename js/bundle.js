@@ -80,13 +80,13 @@ var dspLog = [];
 var initGraph = function() {
 
   // Build the timeline
-  var raw_timeline = new smoothie.SmoothieChart({ responsive: true, millisPerPixel: 40, grid: { strokeStyle: '#555555', lineWidth: 1, millisPerLine: 2000, verticalSections: 4 }});
+  var raw_timeline = new smoothie.SmoothieChart({ responsive: true, enableDpiScaling: false, millisPerPixel: 20, grid: { strokeStyle: '#555555', lineWidth: 1, millisPerLine: 2000, verticalSections: 4 }});
   for (var i = 0; i < rawData.length; i++) {
     raw_timeline.addTimeSeries(rawData[i], seriesOptions[i]);
   }
   raw_timeline.streamTo($("#raw_chart")[0], 1000);
 
-  var dsp_timeline = new smoothie.SmoothieChart({ responsive: true, millisPerPixel: 40, grid: { strokeStyle: '#555555', lineWidth: 1, millisPerLine: 2000, verticalSections: 4 }});
+  var dsp_timeline = new smoothie.SmoothieChart({ responsive: true, enableDpiScaling: false, millisPerPixel: 20, grid: { strokeStyle: '#555555', lineWidth: 1, millisPerLine: 2000, verticalSections: 4 }});
   for (var i = 0; i < dspData.length; i++) {
     dsp_timeline.addTimeSeries(dspData[i], seriesOptions[i]);
   }
