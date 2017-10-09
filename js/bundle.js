@@ -17,7 +17,7 @@ var saveRaw = function() {
   document.body.appendChild(a);
   a.style = "display: none";
   let data = graph.rawLog;
-  let blob = new Blob([data.join()], {type: "text/plain;charset=utf-8"});
+  let blob = new Blob([data.join("\r\n")], {type: "text/plain;charset=utf-8"});
   FileSaver.saveAs(blob, Date() +"raw.csv");
 }
 
@@ -26,7 +26,7 @@ var saveDSP = function() {
   document.body.appendChild(a);
   a.style = "display: none";
   let data = graph.dspLog;
-  let blob = new Blob([data.join()], {type: "text/plain;charset=utf-8"});
+  let blob = new Blob([data.join("\r\n")], {type: "text/plain;charset=utf-8"});
   FileSaver.saveAs(blob, Date() +"dsp.csv");
 }
 
