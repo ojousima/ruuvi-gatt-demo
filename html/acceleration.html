@@ -1,0 +1,94 @@
+
+    <div>
+      <h3>Acceleration values</h3>
+      <canvas id="raw_chart" style="width:45%; height=400;"></canvas>
+      <canvas id="dsp_chart" style="width:45%; height="400;"></canvas>
+      <br>
+      <span>X: <span id="dsp_x"></span> Y: <span id="dsp_y"></span> Z: <span id="dsp_z"></span> SUM: <span id="dsp_sum"></span></span>
+    </div>
+    <div>
+    <p>
+    <!-- TODO: Autogenerate -->
+      <span>Destination:</span>
+      <select disabled="true">
+        <option value="ACCELERATION">Acceleration</option>
+      </select>
+    </p>
+    <p>
+      <span>Source:</span>
+      <select disabled="true">
+        <option value="USER_GRAPH_0">Graph 0</option>
+      </select>
+    </p>
+    <p>      
+      <span>Type:</span>
+      <select disabled="true">
+        <option value="SENSOR_CONFIGURATION">Sensor configuration</option>
+      </select>
+    </p>
+    <p>
+    <span>Sample rate:</span>
+    <select>
+        <option value="0">Off</option>
+        <option value="1">1 Hz</option>
+        <option value="10">10 Hz</option>
+        <option value="25">25 Hz</option>
+        <option value="50">50 Hz</option>
+        <option value="100">100 Hz</option>
+        <option value="200">200 Hz</option>
+        <option value="SAMPLE_RATE_MAX">MAX</option>
+    </select>
+    </p>
+    <p>
+    <span>Transmission rate:</span>
+      <select disabled="true">
+        <option value="SAMPLE_RATE">Sample rate</option>
+    </select>
+    </p>
+    <p>
+    <span>Scale:</span>
+      <select>
+        <option value="SCALE_MAX">MAX</option>
+        <option value="SCALE_MIN">MIN</option>
+        <option value="2">2 G</option>
+        <option value="4">4 G</option>
+        <option value="8">8 G</option>
+        <option value="16">16 G</option>
+    </select>
+    </p>
+    <p>
+    <span>Resolution:</span>
+      <select>
+        <option value="RESOLUTION_MAX">MAX</option>
+        <option value="RESOLUTION_MIN">MIN</option>
+        <option value="8">8 bits</option>
+        <option value="10">10 bits</option>
+        <option value="12">12 bits</option>
+    </select>
+    </p>
+    <p>
+    <span>DSP function:</span>
+      <select disabled="true">
+        <option value="DSP_LAST">Last value</option>
+    </select>
+    </p>
+    <p>
+    <span>DSP Parameter</span>
+      <select disabled="true">
+        <option value="0">0</option>
+    </select>
+    </p>
+    <p>
+      <span>Send to:</span>
+      <form>
+      <input type="checkbox" name="target" value="BLE_ADVERISEMENT" disabled="true">BLE Advertisement<br>
+      <input type="checkbox" name="target" value="BLE_GATT">BLE GATT<br>
+      <input type="checkbox" name="target" value="PROPRIETARY" disabled="true">Proprietary protocol<br>
+      <input type="checkbox" name="target" value="NFC" disabled="true">NFC<br>
+      <input type="checkbox" name="target" value="RAM" disabled="true">RAM<br>
+      <input type="checkbox" name="target" value="FLASH" disabled="true">FLASH<br>
+      </form>
+    </select>
+    </p>
+    </div>
+  </div>
