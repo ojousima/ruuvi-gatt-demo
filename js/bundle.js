@@ -1,9 +1,9 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.app = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 /*jshint
     node: true
  */
 "use strict";
-var webble    = require("ruuvi.webbluetooth.js");
+var webble = require("ruuvi.webbluetooth.js");
 var endpoints = require("ruuvi.endpoints.js");
 var $ = require('jquery');
 var graph = require('./graph.js');
@@ -17,8 +17,10 @@ var saveRaw = function() {
   document.body.appendChild(a);
   a.style = "display: none";
   let data = graph.rawLog;
-  let blob = new Blob([data.join("\r\n")], {type: "text/plain;charset=utf-8"});
-  FileSaver.saveAs(blob, Date() +"raw.csv");
+  let blob = new Blob([data.join("\r\n")], {
+    type: "text/plain;charset=utf-8"
+  });
+  FileSaver.saveAs(blob, Date() + "raw.csv");
 }
 
 var saveDSP = function() {
@@ -26,14 +28,16 @@ var saveDSP = function() {
   document.body.appendChild(a);
   a.style = "display: none";
   let data = graph.dspLog;
-  let blob = new Blob([data.join("\r\n")], {type: "text/plain;charset=utf-8"});
-  FileSaver.saveAs(blob, Date() +"dsp.csv");
+  let blob = new Blob([data.join("\r\n")], {
+    type: "text/plain;charset=utf-8"
+  });
+  FileSaver.saveAs(blob, Date() + "dsp.csv");
 }
 
 var connected = false;
 var uart = {};
 
-var connect = async function(){
+var connect = async function() {
   console.log("connecting");
   let device = {};
   device = await webble.connect("Ruuvi");
@@ -44,19 +48,30 @@ var connect = async function(){
   return device;
 };
 
-var configure = async function(){
+var configure = async function() {
   //XXX use ruuvi.endpoints.js create
-  let continuousAcceleration = new Uint8Array([0x40,0x60,0x01,25,251,10,252,1,0,2,0]);
-  let stdevAcceleration      = new Uint8Array([0x50,0x61,0x16,0x40,1,0,0,5,25,2,0]);
+  let continuousAcceleration = new Uint8Array([0x40, 0x60, 0x01, 25, 251, 10, 252, 1, 0, 2, 0]);
+  let stdevAcceleration = new Uint8Array([0x50, 0x61, 0x16, 0x40, 1, 0, 0, 5, 25, 2, 0]);
   //await uart.writeCharacteristic(uart.RX.UUID, continuousAcceleration);
 };
 
-$('#connect-button').click(connect);
-$('#configure-button').click(configure);
-$('#save-raw-button').click(saveRaw);
-$('#save-dsp-button').click(saveDSP);
-graph.initGraph();
-},{"./graph.js":2,"file-saver":3,"jquery":4,"ruuvi.endpoints.js":5,"ruuvi.webbluetooth.js":7}],2:[function(require,module,exports){
+
+
+const init = function() {
+  $('#connect-button').click(connect);
+  $('#configure-button').click(configure);
+  $('#save-raw-button').click(saveRaw);
+  $('#save-dsp-button').click(saveDSP);
+  graph.initGraph();
+}
+
+const delayed_init = function() {
+  window.setTimeout(init,1000);
+}
+module.exports = {
+  INIT: delayed_init
+}
+},{"./graph.js":2,"file-saver":3,"jquery":4,"ruuvi.endpoints.js":12,"ruuvi.webbluetooth.js":14}],2:[function(require,module,exports){
 /*jshint 
     node: true
  */
@@ -64,12 +79,23 @@ graph.initGraph();
 var smoothie = require('smoothie');
 var $ = require('jquery');
 
-var seriesOptions = [
-  { strokeStyle: 'rgba(255, 0, 0, 1)', fillStyle: 'rgba(255, 0, 0, 0.1)', lineWidth: 3 },
-  { strokeStyle: 'rgba(0, 255, 0, 1)', fillStyle: 'rgba(0, 255, 0, 0.1)', lineWidth: 3 },
-  { strokeStyle: 'rgba(0, 0, 255, 1)', fillStyle: 'rgba(0, 0, 255, 0.1)', lineWidth: 3 },
-  { strokeStyle: 'rgba(255, 255, 0, 1)', fillStyle: 'rgba(255, 255, 0, 0.1)', lineWidth: 3 }
-];
+var seriesOptions = [{
+  strokeStyle: 'rgba(255, 0, 0, 1)',
+  fillStyle: 'rgba(255, 0, 0, 0.1)',
+  lineWidth: 3
+}, {
+  strokeStyle: 'rgba(0, 255, 0, 1)',
+  fillStyle: 'rgba(0, 255, 0, 0.1)',
+  lineWidth: 3
+}, {
+  strokeStyle: 'rgba(0, 0, 255, 1)',
+  fillStyle: 'rgba(0, 0, 255, 0.1)',
+  lineWidth: 3
+}, {
+  strokeStyle: 'rgba(255, 255, 0, 1)',
+  fillStyle: 'rgba(255, 255, 0, 0.1)',
+  lineWidth: 3
+}];
 
 var now = 0;
 var rawData = [new smoothie.TimeSeries(), new smoothie.TimeSeries(), new smoothie.TimeSeries(), new smoothie.TimeSeries()];
@@ -80,64 +106,83 @@ var dspLog = [];
 var initGraph = function() {
 
   // Build the timeline
-  var raw_timeline = new smoothie.SmoothieChart({ responsive: true, enableDpiScaling: false, millisPerPixel: 20, grid: { strokeStyle: '#555555', lineWidth: 1, millisPerLine: 2000, verticalSections: 4 }});
+  var raw_timeline = new smoothie.SmoothieChart({
+    // responsive: true,
+    // enableDpiScaling: false,
+    // millisPerPixel: 20,
+    grid: {
+      strokeStyle: '#555555',
+      lineWidth: 1,
+      millisPerLine: 2000,
+      verticalSections: 4
+    }
+  });
   for (var i = 0; i < rawData.length; i++) {
     raw_timeline.addTimeSeries(rawData[i], seriesOptions[i]);
   }
   raw_timeline.streamTo($("#raw_chart")[0], 1000);
 
-  var dsp_timeline = new smoothie.SmoothieChart({ responsive: true, enableDpiScaling: false, millisPerPixel: 20, grid: { strokeStyle: '#555555', lineWidth: 1, millisPerLine: 2000, verticalSections: 4 }});
+  var dsp_timeline = new smoothie.SmoothieChart({
+    // responsive: true,
+    // enableDpiScaling: false,
+    // millisPerPixel: 20,
+    grid: {
+      strokeStyle: '#555555',
+      lineWidth: 1,
+      millisPerLine: 2000,
+      verticalSections: 4
+    }
+  });
   for (var i = 0; i < dspData.length; i++) {
     dsp_timeline.addTimeSeries(dspData[i], seriesOptions[i]);
   }
   dsp_timeline.streamTo($("#dsp_chart")[0], 1000);
 };
 
-var addToDataSets = function (data) {
+var addToDataSets = function(data) {
 
   let header = data.buffer.slice(0, 3);
   let payload = data.buffer.slice(3, data.byteLength);
   let valueArray = new DataView(payload);
   let headerArray = new DataView(header);
-  
-  if(headerArray.getUint8(0) == 0x60)
-  {
+
+  if (headerArray.getUint8(0) == 0x60) {
     now += 40;
     let rtc = new Date().getTime();
-    if(rtc-now > 500){ now = rtc};
+    if (rtc - now > 500) {
+      now = rtc
+    };
     let graphLogEntry = [];
     graphLogEntry.push(now);
     for (var i = 0; i < rawData.length; i++) {
-      rawData[i].append(now, valueArray.getInt16(i*2, true));
-      graphLogEntry.push(valueArray.getInt16(i*2, true));
+      rawData[i].append(now, valueArray.getInt16(i * 2, true));
+      graphLogEntry.push(valueArray.getInt16(i * 2, true));
     }
     rawLog.push(graphLogEntry);
   }
-  if(headerArray.getUint8(0) == 0x61)
-  {
+  if (headerArray.getUint8(0) == 0x61) {
     let rtc = new Date().getTime();
     let graphLogEntry = [];
     graphLogEntry.push(rtc);
     for (var i = 0; i < dspData.length; i++) {
-      dspData[i].append(now, valueArray.getInt16(i*2, true));
-      graphLogEntry.push(valueArray.getInt16(i*2, true));
+      dspData[i].append(now, valueArray.getInt16(i * 2, true));
+      graphLogEntry.push(valueArray.getInt16(i * 2, true));
     }
     $("#dsp_x").text(graphLogEntry[1]);
     $("#dsp_y").text(graphLogEntry[2]);
     $("#dsp_z").text(graphLogEntry[3]);
     $("#dsp_sum").text(graphLogEntry[4]);
     dspLog.push(graphLogEntry);
-  }    
+  }
 };
 
 module.exports = {
-	initGraph: initGraph,
-	addToDataSets: addToDataSets,
+  initGraph: initGraph,
+  addToDataSets: addToDataSets,
   rawLog: rawLog,
   dspLog: dspLog
 };
-
-},{"jquery":4,"smoothie":10}],3:[function(require,module,exports){
+},{"jquery":4,"smoothie":19}],3:[function(require,module,exports){
 /* FileSaver.js
  * A saveAs() FileSaver implementation.
  * 1.3.2
@@ -329,7 +374,7 @@ if (typeof module !== "undefined" && module.exports) {
 
 },{}],4:[function(require,module,exports){
 /*!
- * jQuery JavaScript Library v3.2.1
+ * jQuery JavaScript Library v3.3.1
  * https://jquery.com/
  *
  * Includes Sizzle.js
@@ -339,7 +384,7 @@ if (typeof module !== "undefined" && module.exports) {
  * Released under the MIT license
  * https://jquery.org/license
  *
- * Date: 2017-03-20T18:59Z
+ * Date: 2018-01-20T17:24Z
  */
 ( function( global, factory ) {
 
@@ -401,16 +446,57 @@ var ObjectFunctionString = fnToString.call( Object );
 
 var support = {};
 
+var isFunction = function isFunction( obj ) {
+
+      // Support: Chrome <=57, Firefox <=52
+      // In some browsers, typeof returns "function" for HTML <object> elements
+      // (i.e., `typeof document.createElement( "object" ) === "function"`).
+      // We don't want to classify *any* DOM node as a function.
+      return typeof obj === "function" && typeof obj.nodeType !== "number";
+  };
 
 
-	function DOMEval( code, doc ) {
+var isWindow = function isWindow( obj ) {
+		return obj != null && obj === obj.window;
+	};
+
+
+
+
+	var preservedScriptAttributes = {
+		type: true,
+		src: true,
+		noModule: true
+	};
+
+	function DOMEval( code, doc, node ) {
 		doc = doc || document;
 
-		var script = doc.createElement( "script" );
+		var i,
+			script = doc.createElement( "script" );
 
 		script.text = code;
+		if ( node ) {
+			for ( i in preservedScriptAttributes ) {
+				if ( node[ i ] ) {
+					script[ i ] = node[ i ];
+				}
+			}
+		}
 		doc.head.appendChild( script ).parentNode.removeChild( script );
 	}
+
+
+function toType( obj ) {
+	if ( obj == null ) {
+		return obj + "";
+	}
+
+	// Support: Android <=2.3 only (functionish RegExp)
+	return typeof obj === "object" || typeof obj === "function" ?
+		class2type[ toString.call( obj ) ] || "object" :
+		typeof obj;
+}
 /* global Symbol */
 // Defining this global in .eslintrc.json would create a danger of using the global
 // unguarded in another place, it seems safer to define global only for this module
@@ -418,7 +504,7 @@ var support = {};
 
 
 var
-	version = "3.2.1",
+	version = "3.3.1",
 
 	// Define a local copy of jQuery
 	jQuery = function( selector, context ) {
@@ -430,16 +516,7 @@ var
 
 	// Support: Android <=4.0 only
 	// Make sure we trim BOM and NBSP
-	rtrim = /^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g,
-
-	// Matches dashed string for camelizing
-	rmsPrefix = /^-ms-/,
-	rdashAlpha = /-([a-z])/g,
-
-	// Used by jQuery.camelCase as callback to replace()
-	fcamelCase = function( all, letter ) {
-		return letter.toUpperCase();
-	};
+	rtrim = /^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g;
 
 jQuery.fn = jQuery.prototype = {
 
@@ -539,7 +616,7 @@ jQuery.extend = jQuery.fn.extend = function() {
 	}
 
 	// Handle case when target is a string or something (possible in deep copy)
-	if ( typeof target !== "object" && !jQuery.isFunction( target ) ) {
+	if ( typeof target !== "object" && !isFunction( target ) ) {
 		target = {};
 	}
 
@@ -605,28 +682,6 @@ jQuery.extend( {
 
 	noop: function() {},
 
-	isFunction: function( obj ) {
-		return jQuery.type( obj ) === "function";
-	},
-
-	isWindow: function( obj ) {
-		return obj != null && obj === obj.window;
-	},
-
-	isNumeric: function( obj ) {
-
-		// As of jQuery 3.0, isNumeric is limited to
-		// strings and numbers (primitives or objects)
-		// that can be coerced to finite numbers (gh-2662)
-		var type = jQuery.type( obj );
-		return ( type === "number" || type === "string" ) &&
-
-			// parseFloat NaNs numeric-cast false positives ("")
-			// ...but misinterprets leading-number strings, particularly hex literals ("0x...")
-			// subtraction forces infinities to NaN
-			!isNaN( obj - parseFloat( obj ) );
-	},
-
 	isPlainObject: function( obj ) {
 		var proto, Ctor;
 
@@ -660,27 +715,9 @@ jQuery.extend( {
 		return true;
 	},
 
-	type: function( obj ) {
-		if ( obj == null ) {
-			return obj + "";
-		}
-
-		// Support: Android <=2.3 only (functionish RegExp)
-		return typeof obj === "object" || typeof obj === "function" ?
-			class2type[ toString.call( obj ) ] || "object" :
-			typeof obj;
-	},
-
 	// Evaluates a script in a global context
 	globalEval: function( code ) {
 		DOMEval( code );
-	},
-
-	// Convert dashed to camelCase; used by the css and data modules
-	// Support: IE <=9 - 11, Edge 12 - 13
-	// Microsoft forgot to hump their vendor prefix (#9572)
-	camelCase: function( string ) {
-		return string.replace( rmsPrefix, "ms-" ).replace( rdashAlpha, fcamelCase );
 	},
 
 	each: function( obj, callback ) {
@@ -803,37 +840,6 @@ jQuery.extend( {
 	// A global GUID counter for objects
 	guid: 1,
 
-	// Bind a function to a context, optionally partially applying any
-	// arguments.
-	proxy: function( fn, context ) {
-		var tmp, args, proxy;
-
-		if ( typeof context === "string" ) {
-			tmp = fn[ context ];
-			context = fn;
-			fn = tmp;
-		}
-
-		// Quick check to determine if target is callable, in the spec
-		// this throws a TypeError, but we will just return undefined.
-		if ( !jQuery.isFunction( fn ) ) {
-			return undefined;
-		}
-
-		// Simulated bind
-		args = slice.call( arguments, 2 );
-		proxy = function() {
-			return fn.apply( context || this, args.concat( slice.call( arguments ) ) );
-		};
-
-		// Set the guid of unique handler to the same of original handler, so it can be removed
-		proxy.guid = fn.guid = fn.guid || jQuery.guid++;
-
-		return proxy;
-	},
-
-	now: Date.now,
-
 	// jQuery.support is not used in Core but other projects attach their
 	// properties to it so it needs to exist.
 	support: support
@@ -856,9 +862,9 @@ function isArrayLike( obj ) {
 	// hasOwn isn't used here due to false negatives
 	// regarding Nodelist length in IE
 	var length = !!obj && "length" in obj && obj.length,
-		type = jQuery.type( obj );
+		type = toType( obj );
 
-	if ( type === "function" || jQuery.isWindow( obj ) ) {
+	if ( isFunction( obj ) || isWindow( obj ) ) {
 		return false;
 	}
 
@@ -3178,11 +3184,9 @@ var rsingleTag = ( /^<([a-z][^\/\0>:\x20\t\r\n\f]*)[\x20\t\r\n\f]*\/?>(?:<\/\1>|
 
 
 
-var risSimple = /^.[^:#\[\.,]*$/;
-
 // Implement the identical functionality for filter and not
 function winnow( elements, qualifier, not ) {
-	if ( jQuery.isFunction( qualifier ) ) {
+	if ( isFunction( qualifier ) ) {
 		return jQuery.grep( elements, function( elem, i ) {
 			return !!qualifier.call( elem, i, elem ) !== not;
 		} );
@@ -3202,16 +3206,8 @@ function winnow( elements, qualifier, not ) {
 		} );
 	}
 
-	// Simple selector that can be filtered directly, removing non-Elements
-	if ( risSimple.test( qualifier ) ) {
-		return jQuery.filter( qualifier, elements, not );
-	}
-
-	// Complex selector, compare the two sets, removing non-Elements
-	qualifier = jQuery.filter( qualifier, elements );
-	return jQuery.grep( elements, function( elem ) {
-		return ( indexOf.call( qualifier, elem ) > -1 ) !== not && elem.nodeType === 1;
-	} );
+	// Filtered directly for both simple and complex selectors
+	return jQuery.filter( qualifier, elements, not );
 }
 
 jQuery.filter = function( expr, elems, not ) {
@@ -3332,7 +3328,7 @@ var rootjQuery,
 						for ( match in context ) {
 
 							// Properties of context are called as methods if possible
-							if ( jQuery.isFunction( this[ match ] ) ) {
+							if ( isFunction( this[ match ] ) ) {
 								this[ match ]( context[ match ] );
 
 							// ...and otherwise set as attributes
@@ -3375,7 +3371,7 @@ var rootjQuery,
 
 		// HANDLE: $(function)
 		// Shortcut for document ready
-		} else if ( jQuery.isFunction( selector ) ) {
+		} else if ( isFunction( selector ) ) {
 			return root.ready !== undefined ?
 				root.ready( selector ) :
 
@@ -3690,11 +3686,11 @@ jQuery.Callbacks = function( options ) {
 
 					( function add( args ) {
 						jQuery.each( args, function( _, arg ) {
-							if ( jQuery.isFunction( arg ) ) {
+							if ( isFunction( arg ) ) {
 								if ( !options.unique || !self.has( arg ) ) {
 									list.push( arg );
 								}
-							} else if ( arg && arg.length && jQuery.type( arg ) !== "string" ) {
+							} else if ( arg && arg.length && toType( arg ) !== "string" ) {
 
 								// Inspect recursively
 								add( arg );
@@ -3809,11 +3805,11 @@ function adoptValue( value, resolve, reject, noValue ) {
 	try {
 
 		// Check for promise aspect first to privilege synchronous behavior
-		if ( value && jQuery.isFunction( ( method = value.promise ) ) ) {
+		if ( value && isFunction( ( method = value.promise ) ) ) {
 			method.call( value ).done( resolve ).fail( reject );
 
 		// Other thenables
-		} else if ( value && jQuery.isFunction( ( method = value.then ) ) ) {
+		} else if ( value && isFunction( ( method = value.then ) ) ) {
 			method.call( value, resolve, reject );
 
 		// Other non-thenables
@@ -3871,14 +3867,14 @@ jQuery.extend( {
 						jQuery.each( tuples, function( i, tuple ) {
 
 							// Map tuples (progress, done, fail) to arguments (done, fail, progress)
-							var fn = jQuery.isFunction( fns[ tuple[ 4 ] ] ) && fns[ tuple[ 4 ] ];
+							var fn = isFunction( fns[ tuple[ 4 ] ] ) && fns[ tuple[ 4 ] ];
 
 							// deferred.progress(function() { bind to newDefer or newDefer.notify })
 							// deferred.done(function() { bind to newDefer or newDefer.resolve })
 							// deferred.fail(function() { bind to newDefer or newDefer.reject })
 							deferred[ tuple[ 1 ] ]( function() {
 								var returned = fn && fn.apply( this, arguments );
-								if ( returned && jQuery.isFunction( returned.promise ) ) {
+								if ( returned && isFunction( returned.promise ) ) {
 									returned.promise()
 										.progress( newDefer.notify )
 										.done( newDefer.resolve )
@@ -3932,7 +3928,7 @@ jQuery.extend( {
 										returned.then;
 
 									// Handle a returned thenable
-									if ( jQuery.isFunction( then ) ) {
+									if ( isFunction( then ) ) {
 
 										// Special processors (notify) just wait for resolution
 										if ( special ) {
@@ -4028,7 +4024,7 @@ jQuery.extend( {
 							resolve(
 								0,
 								newDefer,
-								jQuery.isFunction( onProgress ) ?
+								isFunction( onProgress ) ?
 									onProgress :
 									Identity,
 								newDefer.notifyWith
@@ -4040,7 +4036,7 @@ jQuery.extend( {
 							resolve(
 								0,
 								newDefer,
-								jQuery.isFunction( onFulfilled ) ?
+								isFunction( onFulfilled ) ?
 									onFulfilled :
 									Identity
 							)
@@ -4051,7 +4047,7 @@ jQuery.extend( {
 							resolve(
 								0,
 								newDefer,
-								jQuery.isFunction( onRejected ) ?
+								isFunction( onRejected ) ?
 									onRejected :
 									Thrower
 							)
@@ -4091,8 +4087,15 @@ jQuery.extend( {
 					// fulfilled_callbacks.disable
 					tuples[ 3 - i ][ 2 ].disable,
 
+					// rejected_handlers.disable
+					// fulfilled_handlers.disable
+					tuples[ 3 - i ][ 3 ].disable,
+
 					// progress_callbacks.lock
-					tuples[ 0 ][ 2 ].lock
+					tuples[ 0 ][ 2 ].lock,
+
+					// progress_handlers.lock
+					tuples[ 0 ][ 3 ].lock
 				);
 			}
 
@@ -4162,7 +4165,7 @@ jQuery.extend( {
 
 			// Use .then() to unwrap secondary thenables (cf. gh-3000)
 			if ( master.state() === "pending" ||
-				jQuery.isFunction( resolveValues[ i ] && resolveValues[ i ].then ) ) {
+				isFunction( resolveValues[ i ] && resolveValues[ i ].then ) ) {
 
 				return master.then();
 			}
@@ -4290,7 +4293,7 @@ var access = function( elems, fn, key, value, chainable, emptyGet, raw ) {
 		bulk = key == null;
 
 	// Sets many values
-	if ( jQuery.type( key ) === "object" ) {
+	if ( toType( key ) === "object" ) {
 		chainable = true;
 		for ( i in key ) {
 			access( elems, fn, i, key[ i ], true, emptyGet, raw );
@@ -4300,7 +4303,7 @@ var access = function( elems, fn, key, value, chainable, emptyGet, raw ) {
 	} else if ( value !== undefined ) {
 		chainable = true;
 
-		if ( !jQuery.isFunction( value ) ) {
+		if ( !isFunction( value ) ) {
 			raw = true;
 		}
 
@@ -4342,6 +4345,23 @@ var access = function( elems, fn, key, value, chainable, emptyGet, raw ) {
 
 	return len ? fn( elems[ 0 ], key ) : emptyGet;
 };
+
+
+// Matches dashed string for camelizing
+var rmsPrefix = /^-ms-/,
+	rdashAlpha = /-([a-z])/g;
+
+// Used by camelCase as callback to replace()
+function fcamelCase( all, letter ) {
+	return letter.toUpperCase();
+}
+
+// Convert dashed to camelCase; used by the css and data modules
+// Support: IE <=9 - 11, Edge 12 - 15
+// Microsoft forgot to hump their vendor prefix (#9572)
+function camelCase( string ) {
+	return string.replace( rmsPrefix, "ms-" ).replace( rdashAlpha, fcamelCase );
+}
 var acceptData = function( owner ) {
 
 	// Accepts only:
@@ -4404,14 +4424,14 @@ Data.prototype = {
 		// Handle: [ owner, key, value ] args
 		// Always use camelCase key (gh-2257)
 		if ( typeof data === "string" ) {
-			cache[ jQuery.camelCase( data ) ] = value;
+			cache[ camelCase( data ) ] = value;
 
 		// Handle: [ owner, { properties } ] args
 		} else {
 
 			// Copy the properties one-by-one to the cache object
 			for ( prop in data ) {
-				cache[ jQuery.camelCase( prop ) ] = data[ prop ];
+				cache[ camelCase( prop ) ] = data[ prop ];
 			}
 		}
 		return cache;
@@ -4421,7 +4441,7 @@ Data.prototype = {
 			this.cache( owner ) :
 
 			// Always use camelCase key (gh-2257)
-			owner[ this.expando ] && owner[ this.expando ][ jQuery.camelCase( key ) ];
+			owner[ this.expando ] && owner[ this.expando ][ camelCase( key ) ];
 	},
 	access: function( owner, key, value ) {
 
@@ -4469,9 +4489,9 @@ Data.prototype = {
 
 				// If key is an array of keys...
 				// We always set camelCase keys, so remove that.
-				key = key.map( jQuery.camelCase );
+				key = key.map( camelCase );
 			} else {
-				key = jQuery.camelCase( key );
+				key = camelCase( key );
 
 				// If a key with the spaces exists, use it.
 				// Otherwise, create an array by matching non-whitespace
@@ -4617,7 +4637,7 @@ jQuery.fn.extend( {
 						if ( attrs[ i ] ) {
 							name = attrs[ i ].name;
 							if ( name.indexOf( "data-" ) === 0 ) {
-								name = jQuery.camelCase( name.slice( 5 ) );
+								name = camelCase( name.slice( 5 ) );
 								dataAttr( elem, name, data[ name ] );
 							}
 						}
@@ -4864,8 +4884,7 @@ var swap = function( elem, options, callback, args ) {
 
 
 function adjustCSS( elem, prop, valueParts, tween ) {
-	var adjusted,
-		scale = 1,
+	var adjusted, scale,
 		maxIterations = 20,
 		currentValue = tween ?
 			function() {
@@ -4883,30 +4902,33 @@ function adjustCSS( elem, prop, valueParts, tween ) {
 
 	if ( initialInUnit && initialInUnit[ 3 ] !== unit ) {
 
+		// Support: Firefox <=54
+		// Halve the iteration target value to prevent interference from CSS upper bounds (gh-2144)
+		initial = initial / 2;
+
 		// Trust units reported by jQuery.css
 		unit = unit || initialInUnit[ 3 ];
-
-		// Make sure we update the tween properties later on
-		valueParts = valueParts || [];
 
 		// Iteratively approximate from a nonzero starting point
 		initialInUnit = +initial || 1;
 
-		do {
+		while ( maxIterations-- ) {
 
-			// If previous iteration zeroed out, double until we get *something*.
-			// Use string for doubling so we don't accidentally see scale as unchanged below
-			scale = scale || ".5";
-
-			// Adjust and apply
-			initialInUnit = initialInUnit / scale;
+			// Evaluate and update our best guess (doubling guesses that zero out).
+			// Finish if the scale equals or crosses 1 (making the old*new product non-positive).
 			jQuery.style( elem, prop, initialInUnit + unit );
+			if ( ( 1 - scale ) * ( 1 - ( scale = currentValue() / initial || 0.5 ) ) <= 0 ) {
+				maxIterations = 0;
+			}
+			initialInUnit = initialInUnit / scale;
 
-		// Update scale, tolerating zero or NaN from tween.cur()
-		// Break the loop if scale is unchanged or perfect, or if we've just had enough.
-		} while (
-			scale !== ( scale = currentValue() / initial ) && scale !== 1 && --maxIterations
-		);
+		}
+
+		initialInUnit = initialInUnit * 2;
+		jQuery.style( elem, prop, initialInUnit + unit );
+
+		// Make sure we update the tween properties later on
+		valueParts = valueParts || [];
 	}
 
 	if ( valueParts ) {
@@ -5024,7 +5046,7 @@ var rcheckableType = ( /^(?:checkbox|radio)$/i );
 
 var rtagName = ( /<([a-z][^\/\0>\x20\t\r\n\f]+)/i );
 
-var rscriptType = ( /^$|\/(?:java|ecma)script/i );
+var rscriptType = ( /^$|^module$|\/(?:java|ecma)script/i );
 
 
 
@@ -5106,7 +5128,7 @@ function buildFragment( elems, context, scripts, selection, ignored ) {
 		if ( elem || elem === 0 ) {
 
 			// Add nodes directly
-			if ( jQuery.type( elem ) === "object" ) {
+			if ( toType( elem ) === "object" ) {
 
 				// Support: Android <=4.0 only, PhantomJS 1 only
 				// push.apply(_, arraylike) throws on ancient WebKit
@@ -5616,7 +5638,7 @@ jQuery.event = {
 			enumerable: true,
 			configurable: true,
 
-			get: jQuery.isFunction( hook ) ?
+			get: isFunction( hook ) ?
 				function() {
 					if ( this.originalEvent ) {
 							return hook( this.originalEvent );
@@ -5751,7 +5773,7 @@ jQuery.Event = function( src, props ) {
 	}
 
 	// Create a timestamp if incoming event doesn't have one
-	this.timeStamp = src && src.timeStamp || jQuery.now();
+	this.timeStamp = src && src.timeStamp || Date.now();
 
 	// Mark it as fixed
 	this[ jQuery.expando ] = true;
@@ -5950,14 +5972,13 @@ var
 
 	/* eslint-enable */
 
-	// Support: IE <=10 - 11, Edge 12 - 13
+	// Support: IE <=10 - 11, Edge 12 - 13 only
 	// In IE/Edge using regex groups here causes severe slowdowns.
 	// See https://connect.microsoft.com/IE/feedback/details/1736512/
 	rnoInnerhtml = /<script|<style|<link/i,
 
 	// checked="checked" or checked
 	rchecked = /checked\s*(?:[^=]|=\s*.checked.)/i,
-	rscriptTypeMasked = /^true\/(.*)/,
 	rcleanScript = /^\s*<!(?:\[CDATA\[|--)|(?:\]\]|--)>\s*$/g;
 
 // Prefer a tbody over its parent table for containing new rows
@@ -5965,7 +5986,7 @@ function manipulationTarget( elem, content ) {
 	if ( nodeName( elem, "table" ) &&
 		nodeName( content.nodeType !== 11 ? content : content.firstChild, "tr" ) ) {
 
-		return jQuery( ">tbody", elem )[ 0 ] || elem;
+		return jQuery( elem ).children( "tbody" )[ 0 ] || elem;
 	}
 
 	return elem;
@@ -5977,10 +5998,8 @@ function disableScript( elem ) {
 	return elem;
 }
 function restoreScript( elem ) {
-	var match = rscriptTypeMasked.exec( elem.type );
-
-	if ( match ) {
-		elem.type = match[ 1 ];
+	if ( ( elem.type || "" ).slice( 0, 5 ) === "true/" ) {
+		elem.type = elem.type.slice( 5 );
 	} else {
 		elem.removeAttribute( "type" );
 	}
@@ -6046,15 +6065,15 @@ function domManip( collection, args, callback, ignored ) {
 		l = collection.length,
 		iNoClone = l - 1,
 		value = args[ 0 ],
-		isFunction = jQuery.isFunction( value );
+		valueIsFunction = isFunction( value );
 
 	// We can't cloneNode fragments that contain checked, in WebKit
-	if ( isFunction ||
+	if ( valueIsFunction ||
 			( l > 1 && typeof value === "string" &&
 				!support.checkClone && rchecked.test( value ) ) ) {
 		return collection.each( function( index ) {
 			var self = collection.eq( index );
-			if ( isFunction ) {
+			if ( valueIsFunction ) {
 				args[ 0 ] = value.call( this, index, self.html() );
 			}
 			domManip( self, args, callback, ignored );
@@ -6108,14 +6127,14 @@ function domManip( collection, args, callback, ignored ) {
 						!dataPriv.access( node, "globalEval" ) &&
 						jQuery.contains( doc, node ) ) {
 
-						if ( node.src ) {
+						if ( node.src && ( node.type || "" ).toLowerCase()  !== "module" ) {
 
 							// Optional AJAX dependency, but won't run scripts if not present
 							if ( jQuery._evalUrl ) {
 								jQuery._evalUrl( node.src );
 							}
 						} else {
-							DOMEval( node.textContent.replace( rcleanScript, "" ), doc );
+							DOMEval( node.textContent.replace( rcleanScript, "" ), doc, node );
 						}
 					}
 				}
@@ -6395,8 +6414,6 @@ jQuery.each( {
 		return this.pushStack( ret );
 	};
 } );
-var rmargin = ( /^margin/ );
-
 var rnumnonpx = new RegExp( "^(" + pnum + ")(?!px)[a-z%]+$", "i" );
 
 var getStyles = function( elem ) {
@@ -6413,6 +6430,8 @@ var getStyles = function( elem ) {
 		return view.getComputedStyle( elem );
 	};
 
+var rboxStyle = new RegExp( cssExpand.join( "|" ), "i" );
+
 
 
 ( function() {
@@ -6426,25 +6445,33 @@ var getStyles = function( elem ) {
 			return;
 		}
 
+		container.style.cssText = "position:absolute;left:-11111px;width:60px;" +
+			"margin-top:1px;padding:0;border:0";
 		div.style.cssText =
-			"box-sizing:border-box;" +
-			"position:relative;display:block;" +
+			"position:relative;display:block;box-sizing:border-box;overflow:scroll;" +
 			"margin:auto;border:1px;padding:1px;" +
-			"top:1%;width:50%";
-		div.innerHTML = "";
-		documentElement.appendChild( container );
+			"width:60%;top:1%";
+		documentElement.appendChild( container ).appendChild( div );
 
 		var divStyle = window.getComputedStyle( div );
 		pixelPositionVal = divStyle.top !== "1%";
 
 		// Support: Android 4.0 - 4.3 only, Firefox <=3 - 44
-		reliableMarginLeftVal = divStyle.marginLeft === "2px";
-		boxSizingReliableVal = divStyle.width === "4px";
+		reliableMarginLeftVal = roundPixelMeasures( divStyle.marginLeft ) === 12;
 
-		// Support: Android 4.0 - 4.3 only
+		// Support: Android 4.0 - 4.3 only, Safari <=9.1 - 10.1, iOS <=7.0 - 9.3
 		// Some styles come back with percentage values, even though they shouldn't
-		div.style.marginRight = "50%";
-		pixelMarginRightVal = divStyle.marginRight === "4px";
+		div.style.right = "60%";
+		pixelBoxStylesVal = roundPixelMeasures( divStyle.right ) === 36;
+
+		// Support: IE 9 - 11 only
+		// Detect misreporting of content dimensions for box-sizing:border-box elements
+		boxSizingReliableVal = roundPixelMeasures( divStyle.width ) === 36;
+
+		// Support: IE 9 only
+		// Detect overflow:scroll screwiness (gh-3699)
+		div.style.position = "absolute";
+		scrollboxSizeVal = div.offsetWidth === 36 || "absolute";
 
 		documentElement.removeChild( container );
 
@@ -6453,7 +6480,12 @@ var getStyles = function( elem ) {
 		div = null;
 	}
 
-	var pixelPositionVal, boxSizingReliableVal, pixelMarginRightVal, reliableMarginLeftVal,
+	function roundPixelMeasures( measure ) {
+		return Math.round( parseFloat( measure ) );
+	}
+
+	var pixelPositionVal, boxSizingReliableVal, scrollboxSizeVal, pixelBoxStylesVal,
+		reliableMarginLeftVal,
 		container = document.createElement( "div" ),
 		div = document.createElement( "div" );
 
@@ -6468,26 +6500,26 @@ var getStyles = function( elem ) {
 	div.cloneNode( true ).style.backgroundClip = "";
 	support.clearCloneStyle = div.style.backgroundClip === "content-box";
 
-	container.style.cssText = "border:0;width:8px;height:0;top:0;left:-9999px;" +
-		"padding:0;margin-top:1px;position:absolute";
-	container.appendChild( div );
-
 	jQuery.extend( support, {
-		pixelPosition: function() {
-			computeStyleTests();
-			return pixelPositionVal;
-		},
 		boxSizingReliable: function() {
 			computeStyleTests();
 			return boxSizingReliableVal;
 		},
-		pixelMarginRight: function() {
+		pixelBoxStyles: function() {
 			computeStyleTests();
-			return pixelMarginRightVal;
+			return pixelBoxStylesVal;
+		},
+		pixelPosition: function() {
+			computeStyleTests();
+			return pixelPositionVal;
 		},
 		reliableMarginLeft: function() {
 			computeStyleTests();
 			return reliableMarginLeftVal;
+		},
+		scrollboxSize: function() {
+			computeStyleTests();
+			return scrollboxSizeVal;
 		}
 	} );
 } )();
@@ -6519,7 +6551,7 @@ function curCSS( elem, name, computed ) {
 		// but width seems to be reliably pixels.
 		// This is against the CSSOM draft spec:
 		// https://drafts.csswg.org/cssom/#resolved-values
-		if ( !support.pixelMarginRight() && rnumnonpx.test( ret ) && rmargin.test( name ) ) {
+		if ( !support.pixelBoxStyles() && rnumnonpx.test( ret ) && rboxStyle.test( name ) ) {
 
 			// Remember the original values
 			width = style.width;
@@ -6624,87 +6656,120 @@ function setPositiveNumber( elem, value, subtract ) {
 		value;
 }
 
-function augmentWidthOrHeight( elem, name, extra, isBorderBox, styles ) {
-	var i,
-		val = 0;
+function boxModelAdjustment( elem, dimension, box, isBorderBox, styles, computedVal ) {
+	var i = dimension === "width" ? 1 : 0,
+		extra = 0,
+		delta = 0;
 
-	// If we already have the right measurement, avoid augmentation
-	if ( extra === ( isBorderBox ? "border" : "content" ) ) {
-		i = 4;
-
-	// Otherwise initialize for horizontal or vertical properties
-	} else {
-		i = name === "width" ? 1 : 0;
+	// Adjustment may not be necessary
+	if ( box === ( isBorderBox ? "border" : "content" ) ) {
+		return 0;
 	}
 
 	for ( ; i < 4; i += 2 ) {
 
-		// Both box models exclude margin, so add it if we want it
-		if ( extra === "margin" ) {
-			val += jQuery.css( elem, extra + cssExpand[ i ], true, styles );
+		// Both box models exclude margin
+		if ( box === "margin" ) {
+			delta += jQuery.css( elem, box + cssExpand[ i ], true, styles );
 		}
 
-		if ( isBorderBox ) {
+		// If we get here with a content-box, we're seeking "padding" or "border" or "margin"
+		if ( !isBorderBox ) {
 
-			// border-box includes padding, so remove it if we want content
-			if ( extra === "content" ) {
-				val -= jQuery.css( elem, "padding" + cssExpand[ i ], true, styles );
+			// Add padding
+			delta += jQuery.css( elem, "padding" + cssExpand[ i ], true, styles );
+
+			// For "border" or "margin", add border
+			if ( box !== "padding" ) {
+				delta += jQuery.css( elem, "border" + cssExpand[ i ] + "Width", true, styles );
+
+			// But still keep track of it otherwise
+			} else {
+				extra += jQuery.css( elem, "border" + cssExpand[ i ] + "Width", true, styles );
 			}
 
-			// At this point, extra isn't border nor margin, so remove border
-			if ( extra !== "margin" ) {
-				val -= jQuery.css( elem, "border" + cssExpand[ i ] + "Width", true, styles );
-			}
+		// If we get here with a border-box (content + padding + border), we're seeking "content" or
+		// "padding" or "margin"
 		} else {
 
-			// At this point, extra isn't content, so add padding
-			val += jQuery.css( elem, "padding" + cssExpand[ i ], true, styles );
+			// For "content", subtract padding
+			if ( box === "content" ) {
+				delta -= jQuery.css( elem, "padding" + cssExpand[ i ], true, styles );
+			}
 
-			// At this point, extra isn't content nor padding, so add border
-			if ( extra !== "padding" ) {
-				val += jQuery.css( elem, "border" + cssExpand[ i ] + "Width", true, styles );
+			// For "content" or "padding", subtract border
+			if ( box !== "margin" ) {
+				delta -= jQuery.css( elem, "border" + cssExpand[ i ] + "Width", true, styles );
 			}
 		}
 	}
 
-	return val;
+	// Account for positive content-box scroll gutter when requested by providing computedVal
+	if ( !isBorderBox && computedVal >= 0 ) {
+
+		// offsetWidth/offsetHeight is a rounded sum of content, padding, scroll gutter, and border
+		// Assuming integer scroll gutter, subtract the rest and round down
+		delta += Math.max( 0, Math.ceil(
+			elem[ "offset" + dimension[ 0 ].toUpperCase() + dimension.slice( 1 ) ] -
+			computedVal -
+			delta -
+			extra -
+			0.5
+		) );
+	}
+
+	return delta;
 }
 
-function getWidthOrHeight( elem, name, extra ) {
+function getWidthOrHeight( elem, dimension, extra ) {
 
 	// Start with computed style
-	var valueIsBorderBox,
-		styles = getStyles( elem ),
-		val = curCSS( elem, name, styles ),
-		isBorderBox = jQuery.css( elem, "boxSizing", false, styles ) === "border-box";
+	var styles = getStyles( elem ),
+		val = curCSS( elem, dimension, styles ),
+		isBorderBox = jQuery.css( elem, "boxSizing", false, styles ) === "border-box",
+		valueIsBorderBox = isBorderBox;
 
-	// Computed unit is not pixels. Stop here and return.
+	// Support: Firefox <=54
+	// Return a confounding non-pixel value or feign ignorance, as appropriate.
 	if ( rnumnonpx.test( val ) ) {
-		return val;
+		if ( !extra ) {
+			return val;
+		}
+		val = "auto";
 	}
 
 	// Check for style in case a browser which returns unreliable values
 	// for getComputedStyle silently falls back to the reliable elem.style
-	valueIsBorderBox = isBorderBox &&
-		( support.boxSizingReliable() || val === elem.style[ name ] );
+	valueIsBorderBox = valueIsBorderBox &&
+		( support.boxSizingReliable() || val === elem.style[ dimension ] );
 
-	// Fall back to offsetWidth/Height when value is "auto"
+	// Fall back to offsetWidth/offsetHeight when value is "auto"
 	// This happens for inline elements with no explicit setting (gh-3571)
-	if ( val === "auto" ) {
-		val = elem[ "offset" + name[ 0 ].toUpperCase() + name.slice( 1 ) ];
+	// Support: Android <=4.1 - 4.3 only
+	// Also use offsetWidth/offsetHeight for misreported inline dimensions (gh-3602)
+	if ( val === "auto" ||
+		!parseFloat( val ) && jQuery.css( elem, "display", false, styles ) === "inline" ) {
+
+		val = elem[ "offset" + dimension[ 0 ].toUpperCase() + dimension.slice( 1 ) ];
+
+		// offsetWidth/offsetHeight provide border-box values
+		valueIsBorderBox = true;
 	}
 
-	// Normalize "", auto, and prepare for extra
+	// Normalize "" and auto
 	val = parseFloat( val ) || 0;
 
-	// Use the active box-sizing model to add/subtract irrelevant styles
+	// Adjust for the element's box model
 	return ( val +
-		augmentWidthOrHeight(
+		boxModelAdjustment(
 			elem,
-			name,
+			dimension,
 			extra || ( isBorderBox ? "border" : "content" ),
 			valueIsBorderBox,
-			styles
+			styles,
+
+			// Provide the current computed size to request scroll gutter calculation (gh-3589)
+			val
 		)
 	) + "px";
 }
@@ -6745,9 +6810,7 @@ jQuery.extend( {
 
 	// Add in properties whose names you wish to fix before
 	// setting or getting the value
-	cssProps: {
-		"float": "cssFloat"
-	},
+	cssProps: {},
 
 	// Get and set the style property on a DOM Node
 	style: function( elem, name, value, extra ) {
@@ -6759,7 +6822,7 @@ jQuery.extend( {
 
 		// Make sure that we're working with the right name
 		var ret, type, hooks,
-			origName = jQuery.camelCase( name ),
+			origName = camelCase( name ),
 			isCustomProp = rcustomProp.test( name ),
 			style = elem.style;
 
@@ -6827,7 +6890,7 @@ jQuery.extend( {
 
 	css: function( elem, name, extra, styles ) {
 		var val, num, hooks,
-			origName = jQuery.camelCase( name ),
+			origName = camelCase( name ),
 			isCustomProp = rcustomProp.test( name );
 
 		// Make sure that we're working with the right name. We don't
@@ -6865,8 +6928,8 @@ jQuery.extend( {
 	}
 } );
 
-jQuery.each( [ "height", "width" ], function( i, name ) {
-	jQuery.cssHooks[ name ] = {
+jQuery.each( [ "height", "width" ], function( i, dimension ) {
+	jQuery.cssHooks[ dimension ] = {
 		get: function( elem, computed, extra ) {
 			if ( computed ) {
 
@@ -6882,29 +6945,41 @@ jQuery.each( [ "height", "width" ], function( i, name ) {
 					// in IE throws an error.
 					( !elem.getClientRects().length || !elem.getBoundingClientRect().width ) ?
 						swap( elem, cssShow, function() {
-							return getWidthOrHeight( elem, name, extra );
+							return getWidthOrHeight( elem, dimension, extra );
 						} ) :
-						getWidthOrHeight( elem, name, extra );
+						getWidthOrHeight( elem, dimension, extra );
 			}
 		},
 
 		set: function( elem, value, extra ) {
 			var matches,
-				styles = extra && getStyles( elem ),
-				subtract = extra && augmentWidthOrHeight(
+				styles = getStyles( elem ),
+				isBorderBox = jQuery.css( elem, "boxSizing", false, styles ) === "border-box",
+				subtract = extra && boxModelAdjustment(
 					elem,
-					name,
+					dimension,
 					extra,
-					jQuery.css( elem, "boxSizing", false, styles ) === "border-box",
+					isBorderBox,
 					styles
 				);
+
+			// Account for unreliable border-box dimensions by comparing offset* to computed and
+			// faking a content-box to get border and padding (gh-3699)
+			if ( isBorderBox && support.scrollboxSize() === styles.position ) {
+				subtract -= Math.ceil(
+					elem[ "offset" + dimension[ 0 ].toUpperCase() + dimension.slice( 1 ) ] -
+					parseFloat( styles[ dimension ] ) -
+					boxModelAdjustment( elem, dimension, "border", false, styles ) -
+					0.5
+				);
+			}
 
 			// Convert to pixels if value adjustment is needed
 			if ( subtract && ( matches = rcssNum.exec( value ) ) &&
 				( matches[ 3 ] || "px" ) !== "px" ) {
 
-				elem.style[ name ] = value;
-				value = jQuery.css( elem, name );
+				elem.style[ dimension ] = value;
+				value = jQuery.css( elem, dimension );
 			}
 
 			return setPositiveNumber( elem, value, subtract );
@@ -6948,7 +7023,7 @@ jQuery.each( {
 		}
 	};
 
-	if ( !rmargin.test( prefix ) ) {
+	if ( prefix !== "margin" ) {
 		jQuery.cssHooks[ prefix + suffix ].set = setPositiveNumber;
 	}
 } );
@@ -7119,7 +7194,7 @@ function createFxNow() {
 	window.setTimeout( function() {
 		fxNow = undefined;
 	} );
-	return ( fxNow = jQuery.now() );
+	return ( fxNow = Date.now() );
 }
 
 // Generate parameters to create a standard animation
@@ -7223,9 +7298,10 @@ function defaultPrefilter( elem, props, opts ) {
 	// Restrict "overflow" and "display" styles during box animations
 	if ( isBox && elem.nodeType === 1 ) {
 
-		// Support: IE <=9 - 11, Edge 12 - 13
+		// Support: IE <=9 - 11, Edge 12 - 15
 		// Record all 3 overflow attributes because IE does not infer the shorthand
-		// from identically-valued overflowX and overflowY
+		// from identically-valued overflowX and overflowY and Edge just mirrors
+		// the overflowX value there.
 		opts.overflow = [ style.overflow, style.overflowX, style.overflowY ];
 
 		// Identify a display type, preferring old show/hide data over the CSS cascade
@@ -7333,7 +7409,7 @@ function propFilter( props, specialEasing ) {
 
 	// camelCase, specialEasing and expand cssHook pass
 	for ( index in props ) {
-		name = jQuery.camelCase( index );
+		name = camelCase( index );
 		easing = specialEasing[ name ];
 		value = props[ index ];
 		if ( Array.isArray( value ) ) {
@@ -7458,9 +7534,9 @@ function Animation( elem, properties, options ) {
 	for ( ; index < length; index++ ) {
 		result = Animation.prefilters[ index ].call( animation, elem, props, animation.opts );
 		if ( result ) {
-			if ( jQuery.isFunction( result.stop ) ) {
+			if ( isFunction( result.stop ) ) {
 				jQuery._queueHooks( animation.elem, animation.opts.queue ).stop =
-					jQuery.proxy( result.stop, result );
+					result.stop.bind( result );
 			}
 			return result;
 		}
@@ -7468,7 +7544,7 @@ function Animation( elem, properties, options ) {
 
 	jQuery.map( props, createTween, animation );
 
-	if ( jQuery.isFunction( animation.opts.start ) ) {
+	if ( isFunction( animation.opts.start ) ) {
 		animation.opts.start.call( elem, animation );
 	}
 
@@ -7501,7 +7577,7 @@ jQuery.Animation = jQuery.extend( Animation, {
 	},
 
 	tweener: function( props, callback ) {
-		if ( jQuery.isFunction( props ) ) {
+		if ( isFunction( props ) ) {
 			callback = props;
 			props = [ "*" ];
 		} else {
@@ -7533,9 +7609,9 @@ jQuery.Animation = jQuery.extend( Animation, {
 jQuery.speed = function( speed, easing, fn ) {
 	var opt = speed && typeof speed === "object" ? jQuery.extend( {}, speed ) : {
 		complete: fn || !fn && easing ||
-			jQuery.isFunction( speed ) && speed,
+			isFunction( speed ) && speed,
 		duration: speed,
-		easing: fn && easing || easing && !jQuery.isFunction( easing ) && easing
+		easing: fn && easing || easing && !isFunction( easing ) && easing
 	};
 
 	// Go to the end state if fx are off
@@ -7562,7 +7638,7 @@ jQuery.speed = function( speed, easing, fn ) {
 	opt.old = opt.complete;
 
 	opt.complete = function() {
-		if ( jQuery.isFunction( opt.old ) ) {
+		if ( isFunction( opt.old ) ) {
 			opt.old.call( this );
 		}
 
@@ -7726,7 +7802,7 @@ jQuery.fx.tick = function() {
 		i = 0,
 		timers = jQuery.timers;
 
-	fxNow = jQuery.now();
+	fxNow = Date.now();
 
 	for ( ; i < timers.length; i++ ) {
 		timer = timers[ i ];
@@ -8079,7 +8155,7 @@ jQuery.each( [
 
 
 	// Strip and collapse whitespace according to HTML spec
-	// https://html.spec.whatwg.org/multipage/infrastructure.html#strip-and-collapse-whitespace
+	// https://infra.spec.whatwg.org/#strip-and-collapse-ascii-whitespace
 	function stripAndCollapse( value ) {
 		var tokens = value.match( rnothtmlwhite ) || [];
 		return tokens.join( " " );
@@ -8090,20 +8166,30 @@ function getClass( elem ) {
 	return elem.getAttribute && elem.getAttribute( "class" ) || "";
 }
 
+function classesToArray( value ) {
+	if ( Array.isArray( value ) ) {
+		return value;
+	}
+	if ( typeof value === "string" ) {
+		return value.match( rnothtmlwhite ) || [];
+	}
+	return [];
+}
+
 jQuery.fn.extend( {
 	addClass: function( value ) {
 		var classes, elem, cur, curValue, clazz, j, finalValue,
 			i = 0;
 
-		if ( jQuery.isFunction( value ) ) {
+		if ( isFunction( value ) ) {
 			return this.each( function( j ) {
 				jQuery( this ).addClass( value.call( this, j, getClass( this ) ) );
 			} );
 		}
 
-		if ( typeof value === "string" && value ) {
-			classes = value.match( rnothtmlwhite ) || [];
+		classes = classesToArray( value );
 
+		if ( classes.length ) {
 			while ( ( elem = this[ i++ ] ) ) {
 				curValue = getClass( elem );
 				cur = elem.nodeType === 1 && ( " " + stripAndCollapse( curValue ) + " " );
@@ -8132,7 +8218,7 @@ jQuery.fn.extend( {
 		var classes, elem, cur, curValue, clazz, j, finalValue,
 			i = 0;
 
-		if ( jQuery.isFunction( value ) ) {
+		if ( isFunction( value ) ) {
 			return this.each( function( j ) {
 				jQuery( this ).removeClass( value.call( this, j, getClass( this ) ) );
 			} );
@@ -8142,9 +8228,9 @@ jQuery.fn.extend( {
 			return this.attr( "class", "" );
 		}
 
-		if ( typeof value === "string" && value ) {
-			classes = value.match( rnothtmlwhite ) || [];
+		classes = classesToArray( value );
 
+		if ( classes.length ) {
 			while ( ( elem = this[ i++ ] ) ) {
 				curValue = getClass( elem );
 
@@ -8174,13 +8260,14 @@ jQuery.fn.extend( {
 	},
 
 	toggleClass: function( value, stateVal ) {
-		var type = typeof value;
+		var type = typeof value,
+			isValidValue = type === "string" || Array.isArray( value );
 
-		if ( typeof stateVal === "boolean" && type === "string" ) {
+		if ( typeof stateVal === "boolean" && isValidValue ) {
 			return stateVal ? this.addClass( value ) : this.removeClass( value );
 		}
 
-		if ( jQuery.isFunction( value ) ) {
+		if ( isFunction( value ) ) {
 			return this.each( function( i ) {
 				jQuery( this ).toggleClass(
 					value.call( this, i, getClass( this ), stateVal ),
@@ -8192,12 +8279,12 @@ jQuery.fn.extend( {
 		return this.each( function() {
 			var className, i, self, classNames;
 
-			if ( type === "string" ) {
+			if ( isValidValue ) {
 
 				// Toggle individual class names
 				i = 0;
 				self = jQuery( this );
-				classNames = value.match( rnothtmlwhite ) || [];
+				classNames = classesToArray( value );
 
 				while ( ( className = classNames[ i++ ] ) ) {
 
@@ -8256,7 +8343,7 @@ var rreturn = /\r/g;
 
 jQuery.fn.extend( {
 	val: function( value ) {
-		var hooks, ret, isFunction,
+		var hooks, ret, valueIsFunction,
 			elem = this[ 0 ];
 
 		if ( !arguments.length ) {
@@ -8285,7 +8372,7 @@ jQuery.fn.extend( {
 			return;
 		}
 
-		isFunction = jQuery.isFunction( value );
+		valueIsFunction = isFunction( value );
 
 		return this.each( function( i ) {
 			var val;
@@ -8294,7 +8381,7 @@ jQuery.fn.extend( {
 				return;
 			}
 
-			if ( isFunction ) {
+			if ( valueIsFunction ) {
 				val = value.call( this, i, jQuery( this ).val() );
 			} else {
 				val = value;
@@ -8436,18 +8523,24 @@ jQuery.each( [ "radio", "checkbox" ], function() {
 // Return jQuery for attributes-only inclusion
 
 
-var rfocusMorph = /^(?:focusinfocus|focusoutblur)$/;
+support.focusin = "onfocusin" in window;
+
+
+var rfocusMorph = /^(?:focusinfocus|focusoutblur)$/,
+	stopPropagationCallback = function( e ) {
+		e.stopPropagation();
+	};
 
 jQuery.extend( jQuery.event, {
 
 	trigger: function( event, data, elem, onlyHandlers ) {
 
-		var i, cur, tmp, bubbleType, ontype, handle, special,
+		var i, cur, tmp, bubbleType, ontype, handle, special, lastElement,
 			eventPath = [ elem || document ],
 			type = hasOwn.call( event, "type" ) ? event.type : event,
 			namespaces = hasOwn.call( event, "namespace" ) ? event.namespace.split( "." ) : [];
 
-		cur = tmp = elem = elem || document;
+		cur = lastElement = tmp = elem = elem || document;
 
 		// Don't do events on text and comment nodes
 		if ( elem.nodeType === 3 || elem.nodeType === 8 ) {
@@ -8499,7 +8592,7 @@ jQuery.extend( jQuery.event, {
 
 		// Determine event propagation path in advance, per W3C events spec (#9951)
 		// Bubble up to document, then to window; watch for a global ownerDocument var (#9724)
-		if ( !onlyHandlers && !special.noBubble && !jQuery.isWindow( elem ) ) {
+		if ( !onlyHandlers && !special.noBubble && !isWindow( elem ) ) {
 
 			bubbleType = special.delegateType || type;
 			if ( !rfocusMorph.test( bubbleType + type ) ) {
@@ -8519,7 +8612,7 @@ jQuery.extend( jQuery.event, {
 		// Fire handlers on the event path
 		i = 0;
 		while ( ( cur = eventPath[ i++ ] ) && !event.isPropagationStopped() ) {
-
+			lastElement = cur;
 			event.type = i > 1 ?
 				bubbleType :
 				special.bindType || type;
@@ -8551,7 +8644,7 @@ jQuery.extend( jQuery.event, {
 
 				// Call a native DOM method on the target with the same name as the event.
 				// Don't do default actions on window, that's where global variables be (#6170)
-				if ( ontype && jQuery.isFunction( elem[ type ] ) && !jQuery.isWindow( elem ) ) {
+				if ( ontype && isFunction( elem[ type ] ) && !isWindow( elem ) ) {
 
 					// Don't re-trigger an onFOO event when we call its FOO() method
 					tmp = elem[ ontype ];
@@ -8562,7 +8655,17 @@ jQuery.extend( jQuery.event, {
 
 					// Prevent re-triggering of the same event, since we already bubbled it above
 					jQuery.event.triggered = type;
+
+					if ( event.isPropagationStopped() ) {
+						lastElement.addEventListener( type, stopPropagationCallback );
+					}
+
 					elem[ type ]();
+
+					if ( event.isPropagationStopped() ) {
+						lastElement.removeEventListener( type, stopPropagationCallback );
+					}
+
 					jQuery.event.triggered = undefined;
 
 					if ( tmp ) {
@@ -8608,31 +8711,6 @@ jQuery.fn.extend( {
 } );
 
 
-jQuery.each( ( "blur focus focusin focusout resize scroll click dblclick " +
-	"mousedown mouseup mousemove mouseover mouseout mouseenter mouseleave " +
-	"change select submit keydown keypress keyup contextmenu" ).split( " " ),
-	function( i, name ) {
-
-	// Handle event binding
-	jQuery.fn[ name ] = function( data, fn ) {
-		return arguments.length > 0 ?
-			this.on( name, null, data, fn ) :
-			this.trigger( name );
-	};
-} );
-
-jQuery.fn.extend( {
-	hover: function( fnOver, fnOut ) {
-		return this.mouseenter( fnOver ).mouseleave( fnOut || fnOver );
-	}
-} );
-
-
-
-
-support.focusin = "onfocusin" in window;
-
-
 // Support: Firefox <=44
 // Firefox doesn't have focus(in | out) events
 // Related ticket - https://bugzilla.mozilla.org/show_bug.cgi?id=687787
@@ -8676,7 +8754,7 @@ if ( !support.focusin ) {
 }
 var location = window.location;
 
-var nonce = jQuery.now();
+var nonce = Date.now();
 
 var rquery = ( /\?/ );
 
@@ -8734,7 +8812,7 @@ function buildParams( prefix, obj, traditional, add ) {
 			}
 		} );
 
-	} else if ( !traditional && jQuery.type( obj ) === "object" ) {
+	} else if ( !traditional && toType( obj ) === "object" ) {
 
 		// Serialize object item.
 		for ( name in obj ) {
@@ -8756,7 +8834,7 @@ jQuery.param = function( a, traditional ) {
 		add = function( key, valueOrFunction ) {
 
 			// If value is a function, invoke it and use its return value
-			var value = jQuery.isFunction( valueOrFunction ) ?
+			var value = isFunction( valueOrFunction ) ?
 				valueOrFunction() :
 				valueOrFunction;
 
@@ -8874,7 +8952,7 @@ function addToPrefiltersOrTransports( structure ) {
 			i = 0,
 			dataTypes = dataTypeExpression.toLowerCase().match( rnothtmlwhite ) || [];
 
-		if ( jQuery.isFunction( func ) ) {
+		if ( isFunction( func ) ) {
 
 			// For each dataType in the dataTypeExpression
 			while ( ( dataType = dataTypes[ i++ ] ) ) {
@@ -9346,7 +9424,7 @@ jQuery.extend( {
 		if ( s.crossDomain == null ) {
 			urlAnchor = document.createElement( "a" );
 
-			// Support: IE <=8 - 11, Edge 12 - 13
+			// Support: IE <=8 - 11, Edge 12 - 15
 			// IE throws exception on accessing the href property if url is malformed,
 			// e.g. http://example.com:80x/
 			try {
@@ -9404,8 +9482,8 @@ jQuery.extend( {
 			// Remember the hash so we can put it back
 			uncached = s.url.slice( cacheURL.length );
 
-			// If data is available, append data to url
-			if ( s.data ) {
+			// If data is available and should be processed, append data to url
+			if ( s.data && ( s.processData || typeof s.data === "string" ) ) {
 				cacheURL += ( rquery.test( cacheURL ) ? "&" : "?" ) + s.data;
 
 				// #9682: remove data so that it's not used in an eventual retry
@@ -9642,7 +9720,7 @@ jQuery.each( [ "get", "post" ], function( i, method ) {
 	jQuery[ method ] = function( url, data, callback, type ) {
 
 		// Shift arguments if data argument was omitted
-		if ( jQuery.isFunction( data ) ) {
+		if ( isFunction( data ) ) {
 			type = type || callback;
 			callback = data;
 			data = undefined;
@@ -9680,7 +9758,7 @@ jQuery.fn.extend( {
 		var wrap;
 
 		if ( this[ 0 ] ) {
-			if ( jQuery.isFunction( html ) ) {
+			if ( isFunction( html ) ) {
 				html = html.call( this[ 0 ] );
 			}
 
@@ -9706,7 +9784,7 @@ jQuery.fn.extend( {
 	},
 
 	wrapInner: function( html ) {
-		if ( jQuery.isFunction( html ) ) {
+		if ( isFunction( html ) ) {
 			return this.each( function( i ) {
 				jQuery( this ).wrapInner( html.call( this, i ) );
 			} );
@@ -9726,10 +9804,10 @@ jQuery.fn.extend( {
 	},
 
 	wrap: function( html ) {
-		var isFunction = jQuery.isFunction( html );
+		var htmlIsFunction = isFunction( html );
 
 		return this.each( function( i ) {
-			jQuery( this ).wrapAll( isFunction ? html.call( this, i ) : html );
+			jQuery( this ).wrapAll( htmlIsFunction ? html.call( this, i ) : html );
 		} );
 	},
 
@@ -9821,7 +9899,8 @@ jQuery.ajaxTransport( function( options ) {
 					return function() {
 						if ( callback ) {
 							callback = errorCallback = xhr.onload =
-								xhr.onerror = xhr.onabort = xhr.onreadystatechange = null;
+								xhr.onerror = xhr.onabort = xhr.ontimeout =
+									xhr.onreadystatechange = null;
 
 							if ( type === "abort" ) {
 								xhr.abort();
@@ -9861,7 +9940,7 @@ jQuery.ajaxTransport( function( options ) {
 
 				// Listen to events
 				xhr.onload = callback();
-				errorCallback = xhr.onerror = callback( "error" );
+				errorCallback = xhr.onerror = xhr.ontimeout = callback( "error" );
 
 				// Support: IE 9 only
 				// Use onreadystatechange to replace onabort
@@ -10015,7 +10094,7 @@ jQuery.ajaxPrefilter( "json jsonp", function( s, originalSettings, jqXHR ) {
 	if ( jsonProp || s.dataTypes[ 0 ] === "jsonp" ) {
 
 		// Get callback name, remembering preexisting value associated with it
-		callbackName = s.jsonpCallback = jQuery.isFunction( s.jsonpCallback ) ?
+		callbackName = s.jsonpCallback = isFunction( s.jsonpCallback ) ?
 			s.jsonpCallback() :
 			s.jsonpCallback;
 
@@ -10066,7 +10145,7 @@ jQuery.ajaxPrefilter( "json jsonp", function( s, originalSettings, jqXHR ) {
 			}
 
 			// Call if it was a function and we have a response
-			if ( responseContainer && jQuery.isFunction( overwritten ) ) {
+			if ( responseContainer && isFunction( overwritten ) ) {
 				overwritten( responseContainer[ 0 ] );
 			}
 
@@ -10158,7 +10237,7 @@ jQuery.fn.load = function( url, params, callback ) {
 	}
 
 	// If it's a function
-	if ( jQuery.isFunction( params ) ) {
+	if ( isFunction( params ) ) {
 
 		// We assume that it's the callback
 		callback = params;
@@ -10266,7 +10345,7 @@ jQuery.offset = {
 			curLeft = parseFloat( curCSSLeft ) || 0;
 		}
 
-		if ( jQuery.isFunction( options ) ) {
+		if ( isFunction( options ) ) {
 
 			// Use jQuery.extend here to allow modification of coordinates argument (gh-1848)
 			options = options.call( elem, i, jQuery.extend( {}, curOffset ) );
@@ -10289,6 +10368,8 @@ jQuery.offset = {
 };
 
 jQuery.fn.extend( {
+
+	// offset() relates an element's border box to the document origin
 	offset: function( options ) {
 
 		// Preserve chaining for setter
@@ -10300,7 +10381,7 @@ jQuery.fn.extend( {
 				} );
 		}
 
-		var doc, docElem, rect, win,
+		var rect, win,
 			elem = this[ 0 ];
 
 		if ( !elem ) {
@@ -10315,50 +10396,52 @@ jQuery.fn.extend( {
 			return { top: 0, left: 0 };
 		}
 
+		// Get document-relative position by adding viewport scroll to viewport-relative gBCR
 		rect = elem.getBoundingClientRect();
-
-		doc = elem.ownerDocument;
-		docElem = doc.documentElement;
-		win = doc.defaultView;
-
+		win = elem.ownerDocument.defaultView;
 		return {
-			top: rect.top + win.pageYOffset - docElem.clientTop,
-			left: rect.left + win.pageXOffset - docElem.clientLeft
+			top: rect.top + win.pageYOffset,
+			left: rect.left + win.pageXOffset
 		};
 	},
 
+	// position() relates an element's margin box to its offset parent's padding box
+	// This corresponds to the behavior of CSS absolute positioning
 	position: function() {
 		if ( !this[ 0 ] ) {
 			return;
 		}
 
-		var offsetParent, offset,
+		var offsetParent, offset, doc,
 			elem = this[ 0 ],
 			parentOffset = { top: 0, left: 0 };
 
-		// Fixed elements are offset from window (parentOffset = {top:0, left: 0},
-		// because it is its only offset parent
+		// position:fixed elements are offset from the viewport, which itself always has zero offset
 		if ( jQuery.css( elem, "position" ) === "fixed" ) {
 
-			// Assume getBoundingClientRect is there when computed position is fixed
+			// Assume position:fixed implies availability of getBoundingClientRect
 			offset = elem.getBoundingClientRect();
 
 		} else {
-
-			// Get *real* offsetParent
-			offsetParent = this.offsetParent();
-
-			// Get correct offsets
 			offset = this.offset();
-			if ( !nodeName( offsetParent[ 0 ], "html" ) ) {
-				parentOffset = offsetParent.offset();
-			}
 
-			// Add offsetParent borders
-			parentOffset = {
-				top: parentOffset.top + jQuery.css( offsetParent[ 0 ], "borderTopWidth", true ),
-				left: parentOffset.left + jQuery.css( offsetParent[ 0 ], "borderLeftWidth", true )
-			};
+			// Account for the *real* offset parent, which can be the document or its root element
+			// when a statically positioned element is identified
+			doc = elem.ownerDocument;
+			offsetParent = elem.offsetParent || doc.documentElement;
+			while ( offsetParent &&
+				( offsetParent === doc.body || offsetParent === doc.documentElement ) &&
+				jQuery.css( offsetParent, "position" ) === "static" ) {
+
+				offsetParent = offsetParent.parentNode;
+			}
+			if ( offsetParent && offsetParent !== elem && offsetParent.nodeType === 1 ) {
+
+				// Incorporate borders into its offset, since they are outside its content origin
+				parentOffset = jQuery( offsetParent ).offset();
+				parentOffset.top += jQuery.css( offsetParent, "borderTopWidth", true );
+				parentOffset.left += jQuery.css( offsetParent, "borderLeftWidth", true );
+			}
 		}
 
 		// Subtract parent offsets and element margins
@@ -10400,7 +10483,7 @@ jQuery.each( { scrollLeft: "pageXOffset", scrollTop: "pageYOffset" }, function( 
 
 			// Coalesce documents and windows
 			var win;
-			if ( jQuery.isWindow( elem ) ) {
+			if ( isWindow( elem ) ) {
 				win = elem;
 			} else if ( elem.nodeType === 9 ) {
 				win = elem.defaultView;
@@ -10458,7 +10541,7 @@ jQuery.each( { Height: "height", Width: "width" }, function( name, type ) {
 			return access( this, function( elem, type, value ) {
 				var doc;
 
-				if ( jQuery.isWindow( elem ) ) {
+				if ( isWindow( elem ) ) {
 
 					// $( window ).outerWidth/Height return w/h including scrollbars (gh-1729)
 					return funcName.indexOf( "outer" ) === 0 ?
@@ -10492,6 +10575,28 @@ jQuery.each( { Height: "height", Width: "width" }, function( name, type ) {
 } );
 
 
+jQuery.each( ( "blur focus focusin focusout resize scroll click dblclick " +
+	"mousedown mouseup mousemove mouseover mouseout mouseenter mouseleave " +
+	"change select submit keydown keypress keyup contextmenu" ).split( " " ),
+	function( i, name ) {
+
+	// Handle event binding
+	jQuery.fn[ name ] = function( data, fn ) {
+		return arguments.length > 0 ?
+			this.on( name, null, data, fn ) :
+			this.trigger( name );
+	};
+} );
+
+jQuery.fn.extend( {
+	hover: function( fnOver, fnOut ) {
+		return this.mouseenter( fnOver ).mouseleave( fnOut || fnOver );
+	}
+} );
+
+
+
+
 jQuery.fn.extend( {
 
 	bind: function( types, data, fn ) {
@@ -10513,6 +10618,37 @@ jQuery.fn.extend( {
 	}
 } );
 
+// Bind a function to a context, optionally partially applying any
+// arguments.
+// jQuery.proxy is deprecated to promote standards (specifically Function#bind)
+// However, it is not slated for removal any time soon
+jQuery.proxy = function( fn, context ) {
+	var tmp, args, proxy;
+
+	if ( typeof context === "string" ) {
+		tmp = fn[ context ];
+		context = fn;
+		fn = tmp;
+	}
+
+	// Quick check to determine if target is callable, in the spec
+	// this throws a TypeError, but we will just return undefined.
+	if ( !isFunction( fn ) ) {
+		return undefined;
+	}
+
+	// Simulated bind
+	args = slice.call( arguments, 2 );
+	proxy = function() {
+		return fn.apply( context || this, args.concat( slice.call( arguments ) ) );
+	};
+
+	// Set the guid of unique handler to the same of original handler, so it can be removed
+	proxy.guid = fn.guid = fn.guid || jQuery.guid++;
+
+	return proxy;
+};
+
 jQuery.holdReady = function( hold ) {
 	if ( hold ) {
 		jQuery.readyWait++;
@@ -10523,6 +10659,26 @@ jQuery.holdReady = function( hold ) {
 jQuery.isArray = Array.isArray;
 jQuery.parseJSON = JSON.parse;
 jQuery.nodeName = nodeName;
+jQuery.isFunction = isFunction;
+jQuery.isWindow = isWindow;
+jQuery.camelCase = camelCase;
+jQuery.type = toType;
+
+jQuery.now = Date.now;
+
+jQuery.isNumeric = function( obj ) {
+
+	// As of jQuery 3.0, isNumeric is limited to
+	// strings and numbers (primitives or objects)
+	// that can be coerced to finite numbers (gh-2662)
+	var type = jQuery.type( obj );
+	return ( type === "number" || type === "string" ) &&
+
+		// parseFloat NaNs numeric-cast false positives ("")
+		// ...but misinterprets leading-number strings, particularly hex literals ("0x...")
+		// subtraction forces infinities to NaN
+		!isNaN( obj - parseFloat( obj ) );
+};
 
 
 
@@ -10584,11 +10740,364 @@ return jQuery;
 
 },{}],5:[function(require,module,exports){
 /*jshint 
+    node: true
+ */
+"use strict";
+var endpoints = {
+  RAW_V1:            0x03, // Original broadcast raw data
+  RAW_V2:            0x05, // Updated raw format v2
+  PLAINTEXT:         0x10, // Plaintext data for info, debug etc
+
+  BATTERY:           0x30, // Battery state message
+  TEMPERATURE:       0x31, // Temperature message
+  HUMIDITY:          0x32,
+  PRESSURE:          0x33,
+  AIR_QUALITY:       0x34,
+
+  ACCELERATION:      0x40,
+  MAGNETOMETER:      0x41,
+  GYROSCOPE:         0x42,
+  MOVEMENT_DETECTOR: 0x33,
+
+  MAM:               0xE0  //Masked Authethentication Messaging
+};
+
+/**
+ *  Handlers for incoming messages. Default handler prints message to console.
+ *  TODO: Default handler returns object with the key-value pairs
+ *  Set these to your application handlers as needed
+ */
+var handlers = {
+  RAW_V1:            require('./handlers/raw1.js'),
+  RAW_V2:            require('./handlers/raw2.js'),
+  PLAINTEXT:         require('./handlers/plaintext.js'),
+  MAM:               require('./handlers/mam.js'),
+  MOVEMENT_DETECTOR: require('./handlers/temperature.js'),
+  unknown_handler:   require('./handlers/unknown.js')
+};
+
+var routeRequest = function (request)
+{
+  let response = {};
+  response.ready = false;
+  if(!request.destination_endpoint){
+    response = unknown_handler(request);
+  }
+
+  switch(request.destination_endpoint){
+  case endpoints.RAW_V1:
+      response = handlers.RAW_V1(request);
+      break;
+      
+  case endpoints.RAW_V2:
+      response = handlers.RAW_V2(request);
+      break;
+  
+    case endpoints.PLAINTEXT_MESSAGE:
+      response = handlers.PLAINTEXT(request);
+      break;
+      
+    case endpoints.TEMPERATURE:
+      response = handlers.TEMPERATURE(request);
+      break;
+
+    case endpoints.MAM:
+      response = handlers.MAM(request);
+      break;
+
+    default:
+      response = handlers.unknown_handler(request);
+      break;
+  }
+
+  return response;
+};
+
+/** 
+ *  Replace default handler with one from application
+ *  Usage: setHandler(getEndpoints().ACCELERATION, handler);
+ */
+var setHandler = function(endpoint, handler){
+  handlers[endpoint] = handler;
+};
+
+module.exports = {
+  getEndpoints: endpoints,
+  setHandler:   setHandler,
+  routeRequest: routeRequest
+};
+
+},{"./handlers/mam.js":6,"./handlers/plaintext.js":7,"./handlers/raw1.js":8,"./handlers/raw2.js":9,"./handlers/temperature.js":10,"./handlers/unknown.js":11}],6:[function(require,module,exports){
+/*jshint 
+    node: true
+ */
+"use strict";
+var chunks      = [];
+var num_chunks  = 0;
+var crc         = 0;
+var MAM         = {};
+
+/* https://gist.github.com/taterbase/2784890 */
+function bin2string(array){
+	var result = "";
+	for(var i = 0; i < array.length; ++i){
+		result += (String.fromCharCode(array[i]));
+	}
+	return result;
+}
+
+/* https://stackoverflow.com/questions/33702838/how-to-append-bytes-multi-bytes-and-buffer-to-arraybuffer-in-javascript */
+function concatTypedArrays(a, b) { // a, b TypedArray of same type
+    var c = new (a.constructor)(a.length + b.length);
+    c.set(a, 0);
+    c.set(b, a.length);
+    return c;
+}
+
+function concatBuffers(a, b) {
+    return concatTypedArrays(
+        new Uint8Array(a.buffer || a), 
+        new Uint8Array(b.buffer || b)
+    ).buffer;
+}
+
+module.exports = function(request) {
+  chunks[request.index] = request.payload;
+  //Header block
+  if(request.index == 255)
+  {
+    num_chunks = request.payload[0];
+    crc = request.payload[1];
+    MAM.ready = false;
+    MAM.binary = new Uint8Array(); 
+    console.log("Starting MAM receive, expecting %d chunks", num_chunks);
+  }
+  if(request.index == num_chunks-1){
+    let ii = 0;
+    let message = "";
+    let root = "";
+    console.log("Request: %d, length: %d, MAM complete ", request.index, request.payload.length);
+    for(ii = 0; ii < num_chunks; ii++){
+      // This could be done more effectively
+      MAM.binary = concatBuffers(MAM.binary, chunks[ii]);
+    }
+    MAM.ready = true;
+    
+  }
+  return MAM;
+};
+
+},{}],7:[function(require,module,exports){
+/* https://stackoverflow.com/questions/3195865/converting-byte-array-to-string-in-javascript */
+function bin2String(array) {
+  var result = "";
+  for (var i = 0; i < array.length; i++) {
+    result += String.fromCharCode(array[i]);
+  }
+  return result;
+}
+
+module.exports = function(request) {
+  console.log(bin2String(request.payload));
+  return "ok"
+};
+
+},{}],8:[function(require,module,exports){
+/*jshint 
+    node: true
+ */
+"use strict";
+
+
+//https://github.com/ruuvi/ruuvi-sensor-protocols
+var parseRawRuuvi = function(manufacturerDataBytes){
+  //console.log(manufacturerDataBytes);
+  let humidityStart      = 1;
+  let humidityEnd        = humidityStart+1;
+  let temperatureStart   = humidityEnd;
+  let temperatureEnd     = temperatureStart+2;
+  let pressureStart      = temperatureEnd;
+  let pressureEnd        = pressureStart+2;
+  let accelerationXStart = pressureEnd;
+  let accelerationXEnd   = accelerationXStart+2;
+  let accelerationYStart = accelerationXEnd;
+  let accelerationYEnd   = accelerationYStart+2;
+  let accelerationZStart = accelerationYEnd;
+  let accelerationZEnd   = accelerationZStart+2;
+  let batteryStart       = accelerationZEnd;
+  let batteryEnd         = batteryStart+2;
+
+  let robject = {};
+
+  let humidity = manufacturerDataBytes[humidityStart];
+  humidity/= 2; //scale
+  robject.humidity = humidity;
+
+  let temperatureBytes = manufacturerDataBytes.slice(temperatureStart, temperatureEnd);
+  let temperature = temperatureBytes[0]  //Full degrees
+  temperature += temperatureBytes[1]/100.0; //Decimals
+  if(temperature > 128){           // Ruuvi format, sign bit + value
+    temperature = temperature-128; 
+    temperature = 0 - temperature; 
+  }
+  robject.temperature = temperature;
+
+  let pressureBytes = manufacturerDataBytes.slice(pressureStart, pressureEnd)  // uint16_t pascals
+  let pressure = (pressureBytes[0]<<8) + pressureBytes[1];
+  pressure += 50000; //Ruuvi format
+  robject.pressure = pressure;
+
+  let accelerationBytes = manufacturerDataBytes.slice(accelerationXStart, accelerationXEnd);  // milli-g
+  let accelerationX = (accelerationBytes[0]<<8) + accelerationBytes[1];
+  if(accelerationX > 32767){ accelerationX -= 65536;}  //two's complement
+
+  accelerationBytes = manufacturerDataBytes.slice(accelerationYStart, accelerationYEnd);  // milli-g
+  let accelerationY = (accelerationBytes[0]<<8) + accelerationBytes[1];
+  if(accelerationY > 32767){ accelerationY -= 65536;}  //two's complement
+
+  accelerationBytes = manufacturerDataBytes.slice(accelerationZStart, accelerationZEnd);  // milli-g
+  let accelerationZ = (accelerationBytes[0]<<8) + accelerationBytes[1];
+  if(accelerationZ > 32767){ accelerationZ -= 65536;}  //two's complement
+
+  robject.accelerationX = accelerationX;
+  robject.accelerationY = accelerationY;
+  robject.accelerationZ = accelerationZ;
+  
+  let batteryBytes = manufacturerDataBytes.slice(batteryStart, batteryEnd);  // milli volts
+  let battery = (batteryBytes[0]<<8) + batteryBytes[1];
+  robject.battery = battery;
+  robject.destination_endpoint = 3;
+
+  return robject;
+}
+/** 
+ * Parse incoming binary array with [raw format 1](https://github.com/ruuvi/ruuvi-sensor-protocols)
+ *
+ * Return object which has temperature (C), humidity (RH-%), pressure (Pa), acceleration x, y, z (mg), battery voltage (mV)
+ *
+ * @param request binary array payload. return error if first byte is not 0x03. Any communication layer specific metadata should be stripped.
+ * @return object with ready = true if success, ready = false on failure.
+ * 
+ */
+
+module.exports = function(request) {
+  let robject = {};
+  robject.ready = true;
+  if(request.payload[0] != 0x03 || request.payload.length < 13){
+    console.log("Improperly routed request at raw1");
+    console.log('\t' + JSON.stringify(request));
+  }
+  else {
+    let manufacturerDataString = request.payload;
+    robject = parseRawRuuvi(manufacturerDataString);
+  }
+  return robject;
+};
+
+},{}],9:[function(require,module,exports){
+/*jshint 
+ *node: true
+ */
+"use strict";
+
+//TODO: Refactor into utils
+function toHexString(byteArray) {
+  return Array.from(byteArray, function(byte) {
+    return ('0' + (byte & 0xFF).toString(16)).slice(-2);
+  }).join('')
+}
+
+
+//https://github.com/ruuvi/ruuvi-sensor-protocols
+var parseRawRuuvi = function(manufacturerDataString){
+
+  let robject = {};
+  let data = manufacturerDataString;
+  let dataFormat = data[0] & 0xFF;
+  let temperature = (data[1] << 8 | data[2] & 0xFF) / 200.0;
+  let humidity =  ((data[3] & 0xFF) << 8 | data[4] & 0xFF) / 400.0;
+  let pressure = ((data[5] & 0xFF) << 8 | data[6] & 0xFF) + 50000;
+  let accelerationX = (data[7] << 8 | data[8] & 0xFF) / 1000.0;
+  let accelerationY = (data[9] << 8 | data[10] & 0xFF) / 1000.0;
+  let accelerationZ = (data[11] << 8 | data[12] & 0xFF) / 1000.0;
+  let powerInfo = (data[13] & 0xFF) << 8 | data[14] & 0xFF;
+  let batteryVoltage = (powerInfo >>> 5) / 1000.0 + 1.6;
+  let txPower = (powerInfo & 0b11111) * 2 - 40;
+  let movementCounter = data[15] & 0xFF;
+  let measurementSequenceNumber = (data[16] & 0xFF) << 8 | data[17] & 0xFF;
+  let mac = toHexString(data.subarray(18));
+
+  robject.destination_endpoint = dataFormat;
+  robject.temperature = temperature;
+  robject.humidity = humidity;
+  robject.pressure = pressure;
+  robject.accelerationX = accelerationX;
+  robject.accelerationY = accelerationY;
+  robject.accelerationZ = accelerationZ;
+  robject.batteryVoltage = batteryVoltage;
+  robject.txPower = txPower;
+  robject.movementCounter = movementCounter;
+  robject.measurementSequenceNumber = measurementSequenceNumber;
+  robject.mac = mac;
+
+  return robject;
+}
+
+/** 
+ * Parse incoming binary array with [raw format 2](https://github.com/ruuvi/ruuvi-sensor-protocols)
+ *
+ * Return object which has temperature (C), humidity (RH-%), pressure (Pa), acceleration x, y, z (mg), battery voltage (mV),
+ *               txPower (dBm), movement counter (unitless), measurement sequence number (unitless) and mac address.
+ *
+ * @param request binary array payload. return error if first byte is not 0x05. Any communication layer specific metadata should be stripped.
+ * @return object with ready = true if success, ready = false on failure.
+ * 
+ */
+module.exports = function(request) {
+  let robject = {};
+  //if() TODO request type check
+  robject.ready = true;
+
+  if(request.payload[0] != 0x05 || request.payload.length < 24){
+    console.log("Improperly routed request at raw2. Type: " + request[0] + ", length " + request.length);
+  }
+  else {
+    robject = parseRawRuuvi(request.payload);
+  }
+  return robject;
+};
+
+},{}],10:[function(require,module,exports){
+module.exports = function(request) {
+  console.log(bin2String(request.payload));
+  return "ok"
+};
+
+},{}],11:[function(require,module,exports){
+/* https://stackoverflow.com/questions/3195865/converting-byte-array-to-string-in-javascript */
+function bin2String(array) {
+  var result = "";
+  for (var i = 0; i < array.length; i++) {
+    result += String.fromCharCode(array[i]);
+  }
+  return result;
+}
+
+module.exports = function(request) {
+  console.log("Unknown message: %s", bin2String(request.payload));
+  return "ok"
+};
+
+
+
+},{}],12:[function(require,module,exports){
+/*jshint 
     node: true,
     esversion: 6
  */
 "use strict";
-var parser        = require('./parser.js');
+var parser    = require('./parser.js');
+var endpoints = require('./endpoints.js');
 
 /**
  *  Takes UINT8_T array with 11 bytes as input
@@ -10600,33 +11109,54 @@ var parser        = require('./parser.js');
  *  message.type
  *  message.payload.sample_rate
  *  message.payload.transmission_rate  
- *  // and so on. Payload fields are dependend on type.
+ *  // and so on. Payload fields are dependent on type.
+ *
+ *  Supports Ruuvi Broadcast types, such as manufacturer specific data RAW formats 0x03 and 0x05 (TODO)
+ *
+ *  Returns object with key-value pairs for data, for example data.source, data.destination, 
+ *  data.type, data.val1, data.val2, data.val3 and data.val4
  **/
 var parse = function(serialBuffer){
-  return parser(serialBuffer);	
+  return parser(serialBuffer);
 };
 
 /**
  * Takes Ruuvi Standard Message
  * and returns 11-byte long UINT8 array represenstation.
- *
  */
 var create = function(message){
   console.log("TODO: handle: " + message);
 };
 
+/**
+ *  Returns object with key-value pairs of endpoints
+ */
+var getEndpoints = function(){
+  return endpoints.getEndpoints();
+};
+
+/**
+ *  Returns object with key-value pairs of DSP functions
+ */
+var getDSPFunctions = function(){
+  return endpoints.getDSPFunctions();
+};
+
 module.exports = {
-  parse: parse,
-  create: create
+  parse:           parse,
+  create:          create,
+  getEndpoints:    getEndpoints,
+  getDSPFunctions: getDSPFunctions,
 };
 
 
 
-},{"./parser.js":6}],6:[function(require,module,exports){
+},{"./endpoints.js":5,"./parser.js":13}],13:[function(require,module,exports){
 /*jshint 
     node: true
  */
 "use strict";
+var endpoints = require("./endpoints.js");
 
 let types = {
   SENSOR_CONFIGURATION:  0x01, // Configure sensor
@@ -10736,10 +11266,18 @@ let parseType = function(request, data)
     }
 };
 
+//TODO: create a separate return object in handler rather than modifying the request.
 let parseStandardMsg = function(request, data){
   request.source_endpoint = data[1];
   request.type = data[2];
   parseType(request, data);
+};
+
+let parseBroadcastMsg = function(request, data){
+  //Routes request to appropriate handler which parses the request.
+  request.payload = data;
+  request.destination_endpoint = data[0];
+  return endpoints.routeRequest(request);
 };
 
 /** Take raw uint8_t array from RuuviTag and parse it to a request object**/
@@ -10747,94 +11285,111 @@ module.exports = function(payload) {
   let data = new Uint8Array(payload);
   let request = {};
   request.destination_endpoint = data[0];
-  if(request.destination_endpoint < 0xE0){
+  //Standard type, determined by header
+  if(request.destination_endpoint < 0xE0 && request.destination_endpoint > 0x0F){
     parseStandardMsg(request, data);
   }
+  // Broadcast type
+  else if (request.destination_endpoint <= 0x0F) {
+    request = parseBroadcastMsg(request, data);
+  }
+  //Bulk write type - TODO clarify
   else {
     request.index = data[1];
     request.payload = data.slice(2, data.length);
   }
   return request;
 };
-},{}],7:[function(require,module,exports){
+
+},{"./endpoints.js":5}],14:[function(require,module,exports){
 /*jshint 
     node: true
  */
 "use strict";
-var NORDIC_UART = require("./services/nordic_uart.js");
-var uart = new NORDIC_UART();
+const NORDIC_UART = require("./services/nordic_uart.js");
+const BATTERY = require("./services/battery_interface.js");
+const DIS = require("./services/device_information.js");
+const uart = new NORDIC_UART();
+const dis = new DIS();
+const battery = new BATTERY();
 
 var handle = {};
 /** Known services **/
-var serviceList = [uart];
+var serviceList = [uart, dis, battery];
 /** Initialized services **/
 var servicesAvailable = {};
 
-let initServices = async function(serverHandle, services){
-  try{
+let initServices = async function(serverHandle, services) {
+  try {
     console.log('Initializing services');
-      //Search through list of known services
-      for (const service of services) {
-        //If connection includes a known service
-        let uuid = service.uuid;
-        for(const iface of serviceList) {
-          if(uuid == iface.getServiceUUID()){
-            //Initialise service
-            await iface.init(handle);
-            //Add to list of services
-            let name = iface.getServiceName();
-            servicesAvailable[name] = iface;
-          }
+    //Search through list of known services
+    for (const service of services) {
+      //If connection includes a known service
+      let uuid = service.uuid;
+      for (const iface of serviceList) {
+        if (uuid == iface.getServiceUUID()) {
+          //Initialise service
+          await iface.init(handle);
+          //Add to list of services
+          let name = iface.getServiceName();
+          servicesAvailable[name] = iface;
         }
       }
-  } catch(error) {
+    }
+  } catch (error) {
     console.log("Error: " + error);
   }
 };
 
-let connect = async function(deviceNamePrefix){
+let connect = async function(deviceNamePrefix) {
 
   try {
-      let filters = [];
-      filters.push({namePrefix: deviceNamePrefix});
-      let options = {};
-      /** List services we can use **/
-      let optionalServices = [];
-      for(const iface of serviceList) {
-        optionalServices.push(iface.getServiceUUID());
-      }
-      options.filters = filters;
-      options.optionalServices = optionalServices;
-      //options.acceptAllDevices = true;
-      let device = await navigator.bluetooth.requestDevice(options);
-      handle = await device.gatt.connect();
-      console.log('Getting Services...');
-      //Get available services
-      //Work around bug in web blue implementation which fails on getting all services
-      let services = [];
-      for(const iface of serviceList) {
+    let filters = [];
+    filters.push({
+      namePrefix: deviceNamePrefix
+    });
+    let options = {};
+    /** List services we can use **/
+    let optionalServices = [];
+    for (const iface of serviceList) {
+      optionalServices.push(iface.getServiceUUID());
+    }
+    options.filters = filters;
+    options.optionalServices = optionalServices;
+    //options.acceptAllDevices = true;
+    let device = await navigator.bluetooth.requestDevice(options);
+    handle = await device.gatt.connect();
+    console.log('Getting Services...');
+    //Get available services
+    //Work around bug in web blue implementation which fails on getting all services
+    let services = [];
+    for (const iface of serviceList) {
+      try {
         let service = await handle.getPrimaryService(iface.getServiceUUID());
-        if(service){
+        if (service) {
           services.push(service);
         }
+      } catch (error) {
+        // Service not found on this tag
       }
-      
-      await initServices(handle, services);
-    } catch (error) {
-      console.log("Error: " + error);
     }
+
+    await initServices(handle, services);
+  } catch (error) {
+    console.log("Error: " + error);
+  }
   return handle;
 };
 
-let disconnect = async function(serverHandle){
+let disconnect = async function(serverHandle) {
   try {
     serverHandle.disconnect();
-  } catch(error) {
+  } catch (error) {
     console.log("Error: " + error);
   }
 };
 
-let getServices = function(){
+let getServices = function() {
   return servicesAvailable;
 };
 
@@ -10846,16 +11401,155 @@ let getServices = function(){
  *  getServices(connection)   Returns array of service objects of given connection.
  **/
 module.exports = {
-  connect           : connect,
-  disconnect        : disconnect,
-  getServices       : getServices
+  connect: connect,
+  disconnect: disconnect,
+  getServices: getServices
 };
-},{"./services/nordic_uart.js":8}],8:[function(require,module,exports){
+},{"./services/battery_interface.js":15,"./services/device_information.js":16,"./services/nordic_uart.js":17}],15:[function(require,module,exports){
 /*jshint 
     node: true
  */
 "use strict";
-var serviceInterface = require("./service_interface.js");
+const serviceInterface = require("./service_interface.js");
+
+class batteryService extends serviceInterface {
+
+    constructor() {
+        super();
+        this.serviceName = "Battery Service";
+        this.serviceUUID = 0x180F;
+        this.characteristicUUIDs = {
+            "Battery": 0x2A19
+        };
+        this.serviceHandle = 0;
+        this.Battery = {
+            handle: 0,
+            UUID: this.characteristicUUIDs.Battery,
+            name: "Battery",
+            value: 0,
+            callback: 0,
+            permissions: {
+                "read": 1,
+                "write": 0,
+                "notify": 1,
+                "indicate": 0
+            }
+        };
+    }
+}
+
+module.exports = batteryService;
+},{"./service_interface.js":18}],16:[function(require,module,exports){
+/*jshint 
+    node: true
+ */
+"use strict";
+const serviceInterface = require("./service_interface.js");
+
+class deviceInformation extends serviceInterface {
+
+  constructor(){
+    super();
+    this.serviceName = "Device Information";
+    this.serviceUUID = 0x180A;
+    this.characteristicUUIDs = {"Manufacturer": 0x2A29,
+                                "Model": 0x2A24,
+                                "Serial": 0x2A25,
+                                "Hardware": 0x2A27,
+                                "Software": 0x2A28,
+                                "Firmware": 0x2A26};
+    this.serviceHandle = 0;
+    this.Manufacturer = {
+        handle: 0,
+        UUID: this.characteristicUUIDs.Manufacturer,
+        name: "Manufacturer",
+        value: 0,
+        callback: 0,
+        permissions: {
+        "read":  1,
+        "write": 0,
+        "notify": 0,
+        "indicate": 0
+       }
+    };
+    this.Model = {
+        handle: 0,
+        UUID: this.characteristicUUIDs.Model,
+        name: "Model",
+        value: 0,
+        callback: 0,
+        permissions: {
+        "read":  1,
+        "write": 0,
+        "notify": 0,
+        "indicate": 0
+       }
+    };
+    this.Serial = {
+        handle: 0,
+        UUID: this.characteristicUUIDs.Serial,
+        name: "Serial",
+        value: 0,
+        callback: 0,
+        permissions: {
+        "read":  0, //Web-ble blacklist
+        "write": 0,
+        "notify": 0,
+        "indicate": 0
+       }
+    };
+    this.Hardware = {
+        handle: 0,
+        UUID: this.characteristicUUIDs.Hardware,
+        name: "Hardware",
+        value: 0,
+        callback: 0,
+        permissions: {
+        "read":  1,
+        "write": 0,
+        "notify": 0,
+        "indicate": 0
+       }
+    };
+    this.Software = {
+        handle: 0,
+        UUID: this.characteristicUUIDs.Software,
+        name: "Software",
+        value: 0,
+        callback: 0,
+        permissions: {
+        "read":  1,
+        "write": 0,
+        "notify": 0,
+        "indicate": 0
+       }
+    };
+    this.Firmware = {
+        handle: 0,
+        UUID: this.characteristicUUIDs.Firmware,
+        name: "Firmware",
+        value: 0,
+        callback: 0,
+        permissions: {
+        "read":  1,
+        "write": 0,
+        "notify": 0,
+        "indicate": 0
+       },
+       onRead: function(){
+        this.log = this.handle.value;
+       }
+    };
+  }
+}
+
+module.exports = deviceInformation;
+},{"./service_interface.js":18}],17:[function(require,module,exports){
+/*jshint 
+    node: true
+ */
+"use strict";
+const serviceInterface = require("./service_interface.js");
 
 class nordicUART extends serviceInterface {
 
@@ -10897,16 +11591,25 @@ class nordicUART extends serviceInterface {
 }
 
 module.exports = nordicUART;
-},{"./service_interface.js":9}],9:[function(require,module,exports){
+},{"./service_interface.js":18}],18:[function(require,module,exports){
 /*jshint 
     node: true
  */
 "use strict";
 class serviceInterface{
+  /** Convert 16- or 32-bit UUID into 128-bit UUID string **/
+  convertTo128UUID(short) {
+    return (short.toString(16) + "-0000-1000-8000-00805F9B34FB".toLowerCase()).padStart(36, "0");
+  }
 
   /** Return UUID of service **/
   getServiceUUID(){
-  	return this.serviceUUID;
+    if(typeof(this.serviceUUID) === "string"){
+  	  return this.serviceUUID;
+    }
+    else {
+      return this.convertTo128UUID(this.serviceUUID);
+    }
   }
 
   /** Return name of service **/
@@ -11007,15 +11710,15 @@ class serviceInterface{
    */
   async deinit(){
   	//Service-specific
-  	console.log("Error, disconnect must be defined in serive subclass");
+  	console.log("Error, disconnect must be defined in service subclass");
   }
 }
 module.exports = serviceInterface;
-},{}],10:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 // MIT License:
 //
 // Copyright (c) 2010-2013, Joe Walnes
-//               2013-2017, Drew Noakes
+//               2013-2018, Drew Noakes
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -11038,7 +11741,7 @@ module.exports = serviceInterface;
 /**
  * Smoothie Charts - http://smoothiecharts.org/
  * (c) 2010-2013, Joe Walnes
- *     2013-2017, Drew Noakes
+ *     2013-2018, Drew Noakes
  *
  * v1.0: Main charting library, by Joe Walnes
  * v1.1: Auto scaling of axis, by Neil Dunn
@@ -11093,9 +11796,21 @@ module.exports = serviceInterface;
  * v1.30: Fix inverted logic in devicePixelRatio support, by @scanlime
  * v1.31: Support tooltips, by @Sly1024 and @drewnoakes
  * v1.32: Support frame rate limit, by @dpuyosa
+ * v1.33: Use Date static method instead of instance, by @nnnoel
+ *        Fix bug with tooltips when multiple charts on a page, by @jpmbiz70
+ * v1.34: Add disabled option to TimeSeries, by @TechGuard (#91)
+ *        Add nonRealtimeData option, by @annazhelt (#92, #93)
+ *        Add showIntermediateLabels option, by @annazhelt (#94)
+ *        Add displayDataFromPercentile option, by @annazhelt (#95)
+ *        Fix bug when hiding tooltip element, by @ralphwetzel (#96)
+ *        Support intermediate y-axis labels, by @beikeland (#99)
+ * v1.35: Fix issue with responsive mode at high DPI, by @drewnoakes (#101)
  */
 
 ;(function(exports) {
+
+  // Date.now polyfill
+  Date.now = Date.now || function() { return new Date().getTime(); };
 
   var Util = {
     extend: function() {
@@ -11152,6 +11867,7 @@ module.exports = serviceInterface;
    */
   function TimeSeries(options) {
     this.options = Util.extend({}, TimeSeries.defaultOptions, options);
+    this.disabled = false;
     this.clear();
   }
 
@@ -11269,6 +11985,9 @@ module.exports = serviceInterface;
    *   yMaxFormatter: function(max, precision) { // callback function that formats the max y value label
    *     return parseFloat(max).toFixed(precision);
    *   },
+   *   yIntermediateFormatter: function(intermediate, precision) { // callback function that formats the intermediate y value labels
+   *     return parseFloat(intermediate).toFixed(precision);
+   *   },
    *   maxDataSetLength: 2,
    *   interpolation: 'bezier'                   // one of 'bezier', 'linear', or 'step'
    *   timestampFormatter: null,                 // optional function to format time stamps for bottom of chart
@@ -11291,7 +12010,9 @@ module.exports = serviceInterface;
    *     fillStyle: '#ffffff',                   // colour for text of labels,
    *     fontSize: 15,
    *     fontFamily: 'sans-serif',
-   *     precision: 2
+   *     precision: 2,
+   *     showIntermediateLabels: false,          // shows intermediate labels between min and max values along y axis
+   *     intermediateLabelSameAxis: true,
    *   },
    *   tooltip: false                            // show tooltip when mouse is over the chart
    *   tooltipLine: {                            // properties for a vertical line at the cursor position
@@ -11299,8 +12020,12 @@ module.exports = serviceInterface;
    *     strokeStyle: '#BBBBBB'
    *   },
    *   tooltipFormatter: SmoothieChart.tooltipFormatter, // formatter function for tooltip text
+   *   nonRealtimeData: false,                   // use time of latest data as current time
+   *   displayDataFromPercentile: 1,             // display not latest data, but data from the given percentile
+   *                                             // useful when trying to see old data saved by setting a high value for maxDataSetLength
+   *                                             // should be a value between 0 and 1
    *   responsive: false,                        // whether the chart should adapt to the size of the canvas
-   *   limitFPS: 0                         // maximum frame rate the chart will render at, in FPS (zero means no limit)
+   *   limitFPS: 0                               // maximum frame rate the chart will render at, in FPS (zero means no limit)
    * }
    * </pre>
    *
@@ -11312,6 +12037,7 @@ module.exports = serviceInterface;
     this.currentValueRange = 1;
     this.currentVisMinValue = 0;
     this.lastRenderTimeMillis = 0;
+    this.lastChartTimestamp = 0;
 
     this.mousemove = this.mousemove.bind(this);
     this.mouseout = this.mouseout.bind(this);
@@ -11339,12 +12065,16 @@ module.exports = serviceInterface;
     yMaxFormatter: function(max, precision) {
       return parseFloat(max).toFixed(precision);
     },
+    yIntermediateFormatter: function(intermediate, precision) {
+      return parseFloat(intermediate).toFixed(precision);
+    },
     maxValueScale: 1,
     minValueScale: 1,
     interpolation: 'bezier',
     scaleSmoothing: 0.125,
     maxDataSetLength: 2,
     scrollBackwards: false,
+    displayDataFromPercentile: 1,
     grid: {
       fillStyle: '#000000',
       strokeStyle: '#777777',
@@ -11359,7 +12089,9 @@ module.exports = serviceInterface;
       disabled: false,
       fontSize: 10,
       fontFamily: 'monospace',
-      precision: 2
+      precision: 2,
+      showIntermediateLabels: false,
+      intermediateLabelSameAxis: true,
     },
     horizontalLines: [],
     tooltip: false,
@@ -11368,6 +12100,7 @@ module.exports = serviceInterface;
       strokeStyle: '#BBBBBB'
     },
     tooltipFormatter: SmoothieChart.tooltipFormatter,
+    nonRealtimeData: false,
     responsive: false,
     limitFPS: 0
   };
@@ -11383,7 +12116,7 @@ module.exports = serviceInterface;
             window.msRequestAnimationFrame      ||
             function(callback) {
               return window.setTimeout(function() {
-                callback(new Date().getTime());
+                callback(Date.now());
               }, 16);
             };
           return requestAnimationFrame.call(window, callback, element);
@@ -11497,16 +12230,15 @@ module.exports = serviceInterface;
   };
 
   SmoothieChart.prototype.getTooltipEl = function () {
-    // Use a single tooltip element across all chart instances
-    var el = SmoothieChart.tooltipEl;
-    if (!el) {
-      el = SmoothieChart.tooltipEl = document.createElement('div');
-      el.className = 'smoothie-chart-tooltip';
-      el.style.position = 'absolute';
-      el.style.display = 'none';
-      document.body.appendChild(el);
+    // Create the tool tip element lazily
+    if (!this.tooltipEl) {
+      this.tooltipEl = document.createElement('div');
+      this.tooltipEl.className = 'smoothie-chart-tooltip';
+      this.tooltipEl.style.position = 'absolute';
+      this.tooltipEl.style.display = 'none';
+      document.body.appendChild(this.tooltipEl);
     }
-    return el;
+    return this.tooltipEl;
   };
 
   SmoothieChart.prototype.updateTooltip = function () {
@@ -11517,10 +12249,7 @@ module.exports = serviceInterface;
       return;
     }
 
-    var time = this.lastRenderTimeMillis - (this.delay || 0);
-
-    // Round time down to pixel granularity, so motion appears smoother.
-    time -= time % this.options.millisPerPixel;
+    var time = this.lastChartTimestamp;
 
     // x pixel to time
     var t = this.options.scrollBackwards
@@ -11531,10 +12260,13 @@ module.exports = serviceInterface;
 
      // For each data set...
     for (var d = 0; d < this.seriesSet.length; d++) {
-      var timeSeries = this.seriesSet[d].timeSeries,
-          // find datapoint closest to time 't'
-          closeIdx = Util.binarySearch(timeSeries.data, t);
+      var timeSeries = this.seriesSet[d].timeSeries;
+      if (timeSeries.disabled) {
+          continue;
+      }
 
+      // find datapoint closest to time 't'
+      var closeIdx = Util.binarySearch(timeSeries.data, t);
       if (closeIdx > 0 && closeIdx < timeSeries.data.length) {
         data.push({ series: this.seriesSet[d], index: closeIdx, value: timeSeries.data[closeIdx][1] });
       }
@@ -11564,8 +12296,8 @@ module.exports = serviceInterface;
   SmoothieChart.prototype.mouseout = function () {
     this.mouseover = false;
     this.mouseX = this.mouseY = -1;
-    if (SmoothieChart.tooltipEl)
-      SmoothieChart.tooltipEl.style.display = 'none';
+    if (this.tooltipEl)
+      this.tooltipEl.style.display = 'none';
   };
 
   /**
@@ -11583,10 +12315,12 @@ module.exports = serviceInterface;
       if (width !== this.lastWidth) {
         this.lastWidth = width;
         this.canvas.setAttribute('width', (Math.floor(width * dpr)).toString());
+        this.canvas.getContext('2d').scale(dpr, dpr);
       }
       if (height !== this.lastHeight) {
         this.lastHeight = height;
         this.canvas.setAttribute('height', (Math.floor(height * dpr)).toString());
+        this.canvas.getContext('2d').scale(dpr, dpr);
       }
     } else if (dpr !== 1) {
       // Older behaviour: use the canvas's inner dimensions and scale the element's size
@@ -11625,7 +12359,27 @@ module.exports = serviceInterface;
     // Renders a frame, and queues the next frame for later rendering
     var animate = function() {
       this.frame = SmoothieChart.AnimateCompatibility.requestAnimationFrame(function() {
-        this.render();
+        if(this.options.nonRealtimeData){
+           var dateZero = new Date(0);
+           // find the data point with the latest timestamp
+           var maxTimeStamp = this.seriesSet.reduce(function(max, series){
+             var dataSet = series.timeSeries.data;
+             var indexToCheck = Math.round(this.options.displayDataFromPercentile * dataSet.length) - 1;
+             indexToCheck = indexToCheck >= 0 ? indexToCheck : 0;
+             indexToCheck = indexToCheck <= dataSet.length -1 ? indexToCheck : dataSet.length -1;
+             if(dataSet && dataSet.length > 0)
+             {
+              // timestamp corresponds to element 0 of the data point
+              var lastDataTimeStamp = dataSet[indexToCheck][0];
+              max = max > lastDataTimeStamp ? max : lastDataTimeStamp;
+             }
+             return max;
+          }.bind(this), dateZero);
+          // use the max timestamp as current time
+          this.render(this.canvas, maxTimeStamp > dateZero ? maxTimeStamp : null);
+        } else {
+          this.render();
+        }
         animate();
       }.bind(this));
     }.bind(this);
@@ -11654,6 +12408,10 @@ module.exports = serviceInterface;
     for (var d = 0; d < this.seriesSet.length; d++) {
       // TODO(ndunn): We could calculate / track these values as they stream in.
       var timeSeries = this.seriesSet[d].timeSeries;
+      if (timeSeries.disabled) {
+          continue;
+      }
+
       if (!isNaN(timeSeries.maxValue)) {
         chartMaxValue = !isNaN(chartMaxValue) ? Math.max(chartMaxValue, timeSeries.maxValue) : timeSeries.maxValue;
       }
@@ -11697,7 +12455,7 @@ module.exports = serviceInterface;
   };
 
   SmoothieChart.prototype.render = function(canvas, time) {
-    var nowMillis = new Date().getTime();
+    var nowMillis = Date.now();
 
     // Respect any frame rate limit.
     if (this.options.limitFPS > 0 && nowMillis - this.lastRenderTimeMillis < (1000/this.options.limitFPS))
@@ -11726,6 +12484,8 @@ module.exports = serviceInterface;
 
     // Round time down to pixel granularity, so motion appears smoother.
     time -= time % this.options.millisPerPixel;
+
+    this.lastChartTimestamp = time;
 
     var context = canvas.getContext('2d'),
         chartOptions = this.options,
@@ -11829,8 +12589,12 @@ module.exports = serviceInterface;
     // For each data set...
     for (var d = 0; d < this.seriesSet.length; d++) {
       context.save();
-      var timeSeries = this.seriesSet[d].timeSeries,
-          dataSet = timeSeries.data,
+      var timeSeries = this.seriesSet[d].timeSeries;
+      if (timeSeries.disabled) {
+          continue;
+      }
+
+      var dataSet = timeSeries.data,
           seriesOptions = this.seriesSet[d].options;
 
       // Delete old data that's moved off the left of the chart.
@@ -11931,6 +12695,29 @@ module.exports = serviceInterface;
       context.fillText(minValueString, minLabelPos, dimensions.height - 2);
     }
 
+    // Display intermediate y axis labels along y-axis to the left of the chart
+    if ( chartOptions.labels.showIntermediateLabels
+          && !isNaN(this.valueRange.min) && !isNaN(this.valueRange.max)
+          && chartOptions.grid.verticalSections > 0) {
+      // show a label above every vertical section divider
+      var step = (this.valueRange.max - this.valueRange.min) / chartOptions.grid.verticalSections;
+      var stepPixels = dimensions.height / chartOptions.grid.verticalSections;
+      for (var v = 1; v < chartOptions.grid.verticalSections; v++) {
+        var gy = dimensions.height - Math.round(v * stepPixels);
+        if (chartOptions.grid.sharpLines) {
+          gy -= 0.5;
+        }
+        var yValue = chartOptions.yIntermediateFormatter(this.valueRange.min + (v * step), chartOptions.labels.precision);
+        //left of right axis?
+        intermediateLabelPos =
+          chartOptions.labels.intermediateLabelSameAxis
+          ? (chartOptions.scrollBackwards ? 0 : dimensions.width - context.measureText(yValue).width - 2)
+          : (chartOptions.scrollBackwards ? dimensions.width - context.measureText(yValue).width - 2 : 0);
+
+        context.fillText(yValue, intermediateLabelPos, gy - chartOptions.grid.lineWidth);
+      }
+    }
+
     // Display timestamps along x-axis at the bottom of the chart.
     if (chartOptions.timestampFormatter && chartOptions.grid.millisPerLine > 0) {
       var textUntilX = chartOptions.scrollBackwards
@@ -11976,4 +12763,5 @@ module.exports = serviceInterface;
 
 })(typeof exports === 'undefined' ? this : exports);
 
-},{}]},{},[1]);
+},{}]},{},[1])(1)
+});

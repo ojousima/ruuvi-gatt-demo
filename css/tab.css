@@ -1,6 +1,6 @@
 /* Style the tab */
 div.tab {
-    overflow: hidden;
+    overflow: scroll;
     border: 1px solid #ccc;
     background-color: #f1f1f1;
 }
@@ -14,6 +14,7 @@ div.tab button {
     cursor: pointer;
     padding: 14px 16px;
     transition: 0.3s;
+    height:10%;
 }
 
 /* Change background color of buttons on hover */
@@ -26,17 +27,27 @@ div.tab button.active {
     background-color: #ccc;
 }
 
+#tabarea {
+    height:75%;
+    overflow: scroll;
+        border: 1px solid #ccc;
+    border-top: none;
+}
+
 /* Style the tab content */
 .tabcontent {
     display: none;
     padding: 6px 12px;
-    border: 1px solid #ccc;
-    border-top: none;
+    height:100%;
 }
 
 .tabcontent {
     -webkit-animation: fadeEffect 1s;
     animation: fadeEffect 1s; /* Fading effect takes 1 second */
+}
+
+#console {
+    height:15%;
 }
 
 @-webkit-keyframes fadeEffect {
