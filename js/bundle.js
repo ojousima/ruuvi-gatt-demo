@@ -3,16 +3,17 @@
     node: true
  */
 "use strict";
-var webble = require("ruuvi.webbluetooth.js");
-var endpoints = require("ruuvi.endpoints.js");
-var $ = require('jquery');
-var graph = require('./graph.js');
-var FileSaver = require('file-saver');
+const webble = require("ruuvi.webbluetooth.js");
+const endpoints = require("ruuvi.endpoints.js");
+const $ = require('jquery');
+const graph = require('./graph.js');
+const FileSaver = require('file-saver');
+const deviceInfo = require('./device_information.js')
 
-var GRAPH_ENDPOINT = 0x60;
-var STDEV_ENDPOINT = 0x61;
+const GRAPH_ENDPOINT = 0x60;
+const STDEV_ENDPOINT = 0x61;
 
-var saveRaw = function() {
+const saveRaw = function() {
   let a = document.createElement("a");
   document.body.appendChild(a);
   a.style = "display: none";
@@ -23,7 +24,7 @@ var saveRaw = function() {
   FileSaver.saveAs(blob, Date() + "raw.csv");
 }
 
-var saveDSP = function() {
+const saveDSP = function() {
   let a = document.createElement("a");
   document.body.appendChild(a);
   a.style = "display: none";
@@ -33,45 +34,138 @@ var saveDSP = function() {
   });
   FileSaver.saveAs(blob, Date() + "dsp.csv");
 }
+const toHexString = function(byteArray) {
+  return Array.prototype.map.call(byteArray, function(byte) {
+    return ('0' + (byte & 0xFF).toString(16)).slice(-2);
+  }).join(' ');
+}
 
-var connected = false;
-var uart = {};
+let connected = false;
+let uart = null;
+let dis = null;
+let device = null;
 
-var connect = async function() {
-  console.log("connecting");
-  let device = {};
-  device = await webble.connect("Ruuvi");
+const handleIncomingData = async function(data)
+{
+  let bytes = new Uint8Array(data.buffer);
+  $('#console_text').append('<<< 0x' + toHexString(bytes) + '\n');
+  scrollToBottom("console_text");
+}
+
+const connect = async function() {
   let services = webble.getServices();
   uart = services["Nordic UART"];
-  await uart.registerNotifications(uart.TX.UUID, graph.addToDataSets);
-  //TODO: Check result, add connecting overlay
-  return device;
-};
+  dis = services["Device Information"];
+  await uart.registerNotifications(uart.TX.UUID, handleIncomingData);
+  connected = true;
+}
 
-var configure = async function() {
+const connect_timeout = async function() {
+  console.log("connecting");
+  device = await webble.connect($('#device-name').val());
+  Promise.race([
+    new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 10000)),
+    await connect()
+  ]).catch(function(err) {
+    console.log("Timeout in connection");
+    device = null;
+    uart = null;
+    dis = null;
+  });
+  if (device) {
+    deviceInfo.update(dis, connected);
+  }
+  return device;
+}
+
+const configure = async function() {
   //XXX use ruuvi.endpoints.js create
   let continuousAcceleration = new Uint8Array([0x40, 0x60, 0x01, 25, 251, 10, 252, 1, 0, 2, 0]);
   let stdevAcceleration = new Uint8Array([0x50, 0x61, 0x16, 0x40, 1, 0, 0, 5, 25, 2, 0]);
   //await uart.writeCharacteristic(uart.RX.UUID, continuousAcceleration);
 };
 
+const disconnect = async function() {
+  console.log("Disconnecting");
+  if (device) {
+    try {
+      webble.disconnect(device);
+    } catch (err) {
+      console.log("Error while disconnecting: " + err);
+    }
+  }
+  connected = false;
+  uart = null;
+  dis = null;
+  device = null;
+  deviceInfo.update(dis, connected);
+}
 
+const configure_led = async function() {
+  let destination = 0x2A;
+  let source = 0x01;
+  let type = 0x02;
+  let channel = $('#led-channel').val();
+  let power = $('#led-power').val();
+  let cmd = new Uint8Array([destination, source, type, channel, power, 0, 0, 0, 0, 0, 0]);
+  $('#console_text').append('>>> 0x' + toHexString(cmd) + '\n');
+  try {
+    uart.writeCharacteristic(uart.RX.UUID, cmd);
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+const scrollToBottom = function(id) {
+  $('#' + id).scrollTop($('#' + id)[0].scrollHeight);
+}
 
 const init = function() {
-  $('#connect-button').click(connect);
-  $('#configure-button').click(configure);
-  $('#save-raw-button').click(saveRaw);
-  $('#save-dsp-button').click(saveDSP);
+  $('#connect-button').click(connect_timeout);
+  $('#disconnect-button').click(disconnect);
+  $('#led-configure').click(configure_led);
   graph.initGraph();
 }
 
 const delayed_init = function() {
-  window.setTimeout(init,1000);
+  window.setTimeout(init, 1000);
 }
 module.exports = {
   INIT: delayed_init
 }
-},{"./graph.js":2,"file-saver":3,"jquery":4,"ruuvi.endpoints.js":12,"ruuvi.webbluetooth.js":14}],2:[function(require,module,exports){
+},{"./device_information.js":2,"./graph.js":3,"file-saver":4,"jquery":5,"ruuvi.endpoints.js":13,"ruuvi.webbluetooth.js":15}],2:[function(require,module,exports){
+const $ = require('jquery');
+
+const update = async function(device, connected) {
+  if (connected) {
+    $('#connection-status').text("Connected");
+  } else {
+    $('#connection-status').text("Disconnected");
+  }
+
+  $('#manufacturer').text("");
+  $('#firmware').text("");
+  $('#hardware').text("");
+
+  if(device){
+    try {
+      let decoder = new TextDecoder("utf-8");
+      let data = await device.readCharacteristic(device.Manufacturer.UUID);
+      $('#manufacturer').text(decoder.decode(data));
+      data = await device.readCharacteristic(device.Firmware.UUID);
+      $('#firmware').text(decoder.decode(data));
+      data = await device.readCharacteristic(device.Hardware.UUID);
+      $('#hardware').text(decoder.decode(data));
+    } catch(err) {
+      console.log(err);
+    }
+  }
+}
+
+module.exports = {
+  update: update
+}
+},{"jquery":5}],3:[function(require,module,exports){
 /*jshint 
     node: true
  */
@@ -182,7 +276,7 @@ module.exports = {
   rawLog: rawLog,
   dspLog: dspLog
 };
-},{"jquery":4,"smoothie":19}],3:[function(require,module,exports){
+},{"jquery":5,"smoothie":20}],4:[function(require,module,exports){
 /* FileSaver.js
  * A saveAs() FileSaver implementation.
  * 1.3.2
@@ -372,7 +466,7 @@ if (typeof module !== "undefined" && module.exports) {
   });
 }
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 /*!
  * jQuery JavaScript Library v3.3.1
  * https://jquery.com/
@@ -10738,7 +10832,7 @@ if ( !noGlobal ) {
 return jQuery;
 } );
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 /*jshint 
     node: true
  */
@@ -10827,7 +10921,7 @@ module.exports = {
   routeRequest: routeRequest
 };
 
-},{"./handlers/mam.js":6,"./handlers/plaintext.js":7,"./handlers/raw1.js":8,"./handlers/raw2.js":9,"./handlers/temperature.js":10,"./handlers/unknown.js":11}],6:[function(require,module,exports){
+},{"./handlers/mam.js":7,"./handlers/plaintext.js":8,"./handlers/raw1.js":9,"./handlers/raw2.js":10,"./handlers/temperature.js":11,"./handlers/unknown.js":12}],7:[function(require,module,exports){
 /*jshint 
     node: true
  */
@@ -10887,7 +10981,7 @@ module.exports = function(request) {
   return MAM;
 };
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 /* https://stackoverflow.com/questions/3195865/converting-byte-array-to-string-in-javascript */
 function bin2String(array) {
   var result = "";
@@ -10902,7 +10996,7 @@ module.exports = function(request) {
   return "ok"
 };
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 /*jshint 
     node: true
  */
@@ -10994,7 +11088,7 @@ module.exports = function(request) {
   return robject;
 };
 
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 /*jshint 
  *node: true
  */
@@ -11067,13 +11161,13 @@ module.exports = function(request) {
   return robject;
 };
 
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 module.exports = function(request) {
   console.log(bin2String(request.payload));
   return "ok"
 };
 
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 /* https://stackoverflow.com/questions/3195865/converting-byte-array-to-string-in-javascript */
 function bin2String(array) {
   var result = "";
@@ -11090,7 +11184,7 @@ module.exports = function(request) {
 
 
 
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 /*jshint 
     node: true,
     esversion: 6
@@ -11151,7 +11245,7 @@ module.exports = {
 
 
 
-},{"./endpoints.js":5,"./parser.js":13}],13:[function(require,module,exports){
+},{"./endpoints.js":6,"./parser.js":14}],14:[function(require,module,exports){
 /*jshint 
     node: true
  */
@@ -11301,7 +11395,7 @@ module.exports = function(payload) {
   return request;
 };
 
-},{"./endpoints.js":5}],14:[function(require,module,exports){
+},{"./endpoints.js":6}],15:[function(require,module,exports){
 /*jshint 
     node: true
  */
@@ -11405,7 +11499,7 @@ module.exports = {
   disconnect: disconnect,
   getServices: getServices
 };
-},{"./services/battery_interface.js":15,"./services/device_information.js":16,"./services/nordic_uart.js":17}],15:[function(require,module,exports){
+},{"./services/battery_interface.js":16,"./services/device_information.js":17,"./services/nordic_uart.js":18}],16:[function(require,module,exports){
 /*jshint 
     node: true
  */
@@ -11435,11 +11529,12 @@ class batteryService extends serviceInterface {
                 "indicate": 0
             }
         };
+        this.characteristics = [this.Battery];
     }
 }
 
 module.exports = batteryService;
-},{"./service_interface.js":18}],16:[function(require,module,exports){
+},{"./service_interface.js":19}],17:[function(require,module,exports){
 /*jshint 
     node: true
  */
@@ -11536,15 +11631,13 @@ class deviceInformation extends serviceInterface {
         "notify": 0,
         "indicate": 0
        },
-       onRead: function(){
-        this.log = this.handle.value;
-       }
     };
+    this.characteristics = [this.Manufacturer, this.Model, this.Serial, this.Hardware, this.Software, this.Firmware];
   }
 }
 
 module.exports = deviceInformation;
-},{"./service_interface.js":18}],17:[function(require,module,exports){
+},{"./service_interface.js":19}],18:[function(require,module,exports){
 /*jshint 
     node: true
  */
@@ -11591,34 +11684,33 @@ class nordicUART extends serviceInterface {
 }
 
 module.exports = nordicUART;
-},{"./service_interface.js":18}],18:[function(require,module,exports){
+},{"./service_interface.js":19}],19:[function(require,module,exports){
 /*jshint 
     node: true
  */
 "use strict";
-class serviceInterface{
+class serviceInterface {
   /** Convert 16- or 32-bit UUID into 128-bit UUID string **/
   convertTo128UUID(short) {
     return (short.toString(16) + "-0000-1000-8000-00805F9B34FB".toLowerCase()).padStart(36, "0");
   }
 
   /** Return UUID of service **/
-  getServiceUUID(){
-    if(typeof(this.serviceUUID) === "string"){
-  	  return this.serviceUUID;
-    }
-    else {
+  getServiceUUID() {
+    if (typeof(this.serviceUUID) === "string") {
+      return this.serviceUUID;
+    } else {
       return this.convertTo128UUID(this.serviceUUID);
     }
   }
 
   /** Return name of service **/
-  getServiceName(){
-  	return this.serviceName;
+  getServiceName() {
+    return this.serviceName;
   }
 
   /** Return list of characteristic UUIDs **/
-  getCharacteristicUUIDs(){
+  getCharacteristicUUIDs() {
     let list = [];
     for (let key in this.characteristicUUIDs) {
       // Do not include prototype properties
@@ -11629,26 +11721,26 @@ class serviceInterface{
         list.push(this.characteristicUUIDs[key]);
       }
     }
-  	return list;
+    return list;
   }
 
   /** Return list of characteristic names **/
-  getCharacteristicNames(){
-  	return this.characteristicNames;
+  getCharacteristicNames() {
+    return this.characteristicNames;
   }
 
-  getCharacteristicByUUID(uuid){
-    for(let ii = 0; ii < this.characteristics.length; ii++){
-      if(this.characteristics[ii].UUID == uuid)
+  getCharacteristicByUUID(uuid) {
+    for (let ii = 0; ii < this.characteristics.length; ii++) {
+      if (this.characteristics[ii].UUID == uuid)
         return this.characteristics[ii];
     }
-    return 0; 
+    return 0;
   }
 
   /** Attempts to write value to characteristic **/
-  async writeCharacteristic(uuid, value){
+  async writeCharacteristic(uuid, value) {
     let characteristic = this.getCharacteristicByUUID(uuid);
-    if(!characteristic || !characteristic.permissions.write){
+    if (!characteristic || !characteristic.permissions.write) {
       console.log("Error: could not write to " + uuid);
       return;
     }
@@ -11657,49 +11749,54 @@ class serviceInterface{
 
 
   /** Will return value of characteristic **/
-  async readCharacteristic(uuid){
+  async readCharacteristic(uuid) {
     let characteristic = this.getCharacteristicByUUID(uuid);
-    if(!characteristic || !characteristic.permissions.read){
+    if (!characteristic || !characteristic.permissions.read) {
       console.log("Error: could not read " + uuid);
-      return;
+      return "Error";
     }
-    return await characteristic.readValue();
+    return await characteristic.handle.readValue();
   }
 
   /** Register to notifications from service. Call callback on data. **/
-  async registerNotifications(uuid, callback){
+  async registerNotifications(uuid, callback) {
     let characteristic = this.getCharacteristicByUUID(uuid);
-    if(!characteristic || !characteristic.permissions.notify){
+    if (!characteristic || !characteristic.permissions.notify) {
       console.log("Error: could not register notifications for " + uuid);
       return;
     }
     characteristic.callback = callback;
-    await characteristic.handle.startNotifications();  
+    await characteristic.handle.startNotifications();
   }
 
   /**
    *  Initializes service.
    */
-  async init(serverHandle){
-    try{
+  async init(serverHandle) {
+    try {
       this.serviceHandle = await serverHandle.getPrimaryService(this.serviceUUID);
       let characteristics = this.getCharacteristicUUIDs();
-      for(let ii = 0; ii < characteristics.length; ii++){
+      for (let ii = 0; ii < characteristics.length; ii++) {
         let characteristic = this.getCharacteristicByUUID(characteristics[ii]);
         //Continue if characteristic is not known in service
-        if(!characteristic) {continue;}
-        characteristic.handle = await this.serviceHandle.getCharacteristic(characteristic.UUID);
-        //Callback can be added later
-        characteristic.onChange = function(event) 
-        {
-          if(this.callback){
-            this.callback(event.target.value);
-          }
+        if (!characteristic) {
+          continue;
         }
-        //Bind "this" to characteristic
-        characteristic.handle.addEventListener('characteristicvaluechanged',
-                                                characteristic.onChange.bind(characteristic));
-      }  
+        try {
+          characteristic.handle = await this.serviceHandle.getCharacteristic(characteristic.UUID);
+          //Callback can be added later
+          characteristic.onChange = function(event) {
+            if (this.callback) {
+              this.callback(event.target.value);
+            }
+          }
+          //Bind "this" to characteristic
+          characteristic.handle.addEventListener('characteristicvaluechanged',
+            characteristic.onChange.bind(characteristic));
+        } catch (error) {
+          console.log(characteristic.name + " error: " + error);
+        }
+      }
     } catch (error) {
       console.log(this.serviceName + " error: " + error);
     }
@@ -11708,13 +11805,13 @@ class serviceInterface{
   /**
    *  Releases any connection handles as applicable
    */
-  async deinit(){
-  	//Service-specific
-  	console.log("Error, disconnect must be defined in service subclass");
+  async deinit() {
+    //Service-specific
+    console.log("Error, disconnect must be defined in service subclass");
   }
 }
 module.exports = serviceInterface;
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 // MIT License:
 //
 // Copyright (c) 2010-2013, Joe Walnes

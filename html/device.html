@@ -1,5 +1,25 @@
 
   <div>
-    <button id="connect-button">Connect</button>
-    <p> TODO: Status indication, disconnect </p>
+    <div>
+      <button id="connect-button">Connect to:</button>
+      <input id="device-name" value="Ruuvi"></input>
+      <button id="disconnect-button">Disconnect</button>
+    </div>
+    <div>Connection status: <span id="connection-status">Disconnected</span></div>
+    <div>Manufacturer: <span id="manufacturer"></span></div>
+    <div>Firmware version:<span id="firmware"></span></div>
+    <div>Hardware version:<span id="hardware"></span></div>
+    <div>
+      <select id = "led-channel">
+        <option value="0">Red</option>
+        <option value="1">Green</option>
+        <option value="2">Blue</option>
+        <option value="3">White</option>
+      </select>
+    <span> led </span>
+    <select id = "led-power">
+        <option value="1">on</option>
+        <option value="0">off</option>
+    </select>
+    <button id="led-configure">send</button>
   </div>
