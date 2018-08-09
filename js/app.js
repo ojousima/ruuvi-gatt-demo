@@ -101,6 +101,48 @@ const disconnect = async function() {
   deviceInfo.update(dis, connected);
 }
 
+const configure_environmental = async function() {
+  let destination = 0x3A;
+  let source = 0x01;
+  let type = 0x01;
+  let samplerate = 1;
+  let transmissionrate = 1;
+  let resolution = 252;
+  let scale = 252;
+  let dsp = 0;
+  let dsp_param = 0;
+  let channel = $('#led-channel').val();
+  let power = $('#led-power').val();
+  let cmd = new Uint8Array([destination, source, type, samplerate, transmissionrate, resolution, scale, 0, 0, 0, 0]);
+  $('#console_text').append('>>> 0x' + toHexString(cmd) + '\n');
+  try {
+    uart.writeCharacteristic(uart.RX.UUID, cmd);
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+const stop_environmental = async function() {
+  let destination = 0x3A;
+  let source = 0x01;
+  let type = 0x01;
+  let samplerate = 0;
+  let transmissionrate = 0;
+  let resolution = 252;
+  let scale = 252;
+  let dsp = 0;
+  let dsp_param = 0;
+  let channel = $('#led-channel').val();
+  let power = $('#led-power').val();
+  let cmd = new Uint8Array([destination, source, type, samplerate, transmissionrate, resolution, scale, 0, 0, 0, 0]);
+  $('#console_text').append('>>> 0x' + toHexString(cmd) + '\n');
+  try {
+    uart.writeCharacteristic(uart.RX.UUID, cmd);
+  } catch (err) {
+    console.log(err);
+  }
+}
+
 const configure_led = async function() {
   let destination = 0x2A;
   let source = 0x01;
@@ -124,6 +166,8 @@ const init = function() {
   $('#connect-button').click(connect_timeout);
   $('#disconnect-button').click(disconnect);
   $('#led-configure').click(configure_led);
+  $('#environmental_start').click(configure_environmental);
+  $('#environmental_stop').click(stop_environmental);
   graph.initGraph();
 }
 
