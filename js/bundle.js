@@ -159,6 +159,27 @@ const configure_led = async function() {
   }
 }
 
+const generic_send = async function() {
+  let H0 = $('#generic-H0').val();
+  let H1 = $('#generic-H1').val();
+  let H2 = $('#generic-H2').val();
+  let P0 = $('#generic-P0').val();
+  let P1 = $('#generic-P1').val();
+  let P2 = $('#generic-P2').val();
+  let P3 = $('#generic-P3').val();
+  let P4 = $('#generic-P4').val();
+  let P5 = $('#generic-P5').val();
+  let P6 = $('#generic-P6').val();
+  let P7 = $('#generic-P7').val();
+  let cmd = new Uint8Array([H0, H1, H2, P0, P1, P2, P3, P4, P5, P6, P7]);
+  $('#console_text').append('>>> 0x' + toHexString(cmd) + '\n');
+  try {
+    uart.writeCharacteristic(uart.RX.UUID, cmd);
+  } catch (err) {
+    console.log(err);
+  }
+}
+
 const scrollToBottom = function(id) {
   $('#' + id).scrollTop($('#' + id)[0].scrollHeight);
 }
@@ -169,8 +190,11 @@ const init = function() {
   $('#led-configure').click(configure_led);
   $('#environmental_start').click(configure_environmental);
   $('#environmental_stop').click(stop_environmental);
+  $('#generic-send-button').click(generic_send);
   graph.initGraph();
 }
+
+
 
 const delayed_init = function() {
   window.setTimeout(init, 1000);

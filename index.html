@@ -16,12 +16,14 @@
   <button class="tablinks" onclick="openTab(event, 'Device')">Device</button>
   <button class="tablinks" onclick="openTab(event, 'Acceleration')">Acceleration</button>
   <button class="tablinks" onclick="openTab(event, 'Environmental')">Environmental</button>
+  <button class="tablinks" onclick="openTab(event, 'Generic')">Generic</button>
 </div>
 <!-- https://www.w3schools.com/howto/howto_html_include.asp -->
 <div id="tabarea">
 <div w3-include-html="html/device.html" id="Device" class="tabcontent"></div>
 <div w3-include-html="html/acceleration.html" id="Acceleration" class="tabcontent"></div>
 <div w3-include-html="html/environmental.html" id="Environmental" class="tabcontent"></div>
+<div w3-include-html="html/generic.html" id="Generic" class="tabcontent"></div>
 </div>
 <div w3-include-html="html/console.html"></div>  
 <script>includeHTML();</script>
